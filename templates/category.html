@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.name }} - Melody Store{% endblock %}
+
+{% block content %}
+<!-- Category Header -->
+<section class="category-header">
+    <div class="category-header-content">
+        <div class="category-header-icon">
+            <img src="{{ url_for('static', filename='logos/' + category.slug + '-logo.png') }}"
+                 alt="{{ category.name }}" class="category-icon-large"
+                 onerror="this.src='{{ url_for('static', filename='logos/default-logo.png') }}'">
+        </div>
+        <h1 class="category-title">{{ category.name }}</h1>
+        <p class="category-description">
+            Browse our collection of premium {{ category.name|lower }} accounts.
+            All accounts are verified and ready for immediate delivery.
+        </p>
+        <div class="category-stats">
+            <span class="stat"><i class="fas fa-box"></i> {{ products|length }} Products</span>
+            <span class="stat"><i class="fas fa-check-circle"></i> Verified</span>
+            <span class="stat"><i class="fas fa-bolt"></i> Instant Delivery</span>
+        </div>
+    </div>
+</section>
+
+<!-- Filter Bar -->
+<section class="filter-bar">
+    <div class="filter-container">
+        <div class="filter-left">
+            <div class="filter-group">
+                <label for="sort">Sort by:</label>
+                <select id="sort" class="filter-select" onchange="sortProducts(this.value)">
+                    <option value="default">Default</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="name">Name</option>
+                    <option value="popular">Most Popular</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="stock">Availability:</label>
+                <select id="stock" class="filter-select" onchange="filterStock(this.value)">
+                    <option value="all">All Products</option>
+                    <option value="in-stock">In Stock Only</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="filter-right">
+            <span class="results-count">Showing {{ products|length }} results</span>
+        </div>
+    </div>
+</section>
+
+<!-- Products Grid -->
+<section class="category-products">
+    {% if products %}
+    <div class="products-grid" id="products-grid">
+        {% for product in products %}
+        <div class="product-card"
+             data-price="{{ product.price }}"
+             data-name="{{ product.name }}"
+             data-stock="{{ product.available }}">
+            <div class="product-image">
+                <img src="{{ url_for('static', filename='logos/' + category.slug + '-logo.png') }}"
+                     alt="{{ product.name }}"
+                     onerror="this.src='{{ url_for('static', filename='logos/default-logo.png') }}'">
+                {% if loop.index <= 2 %}
+                <span class="product-badge featured">Featured</span>
+                {% endif %}
+                {% if product.available <= 3 and product.available > 0 %}
+                <span class="product-badge low-stock">Low Stock</span>
+                {% endif %}
+            </div>
+
+            <div class="product-content">
+                <h3 class="product-title">{{ product.name }}</h3>
+                <p class="product-description">{{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}</p>
+
+                <div class="product-price">
+                    <span class="price">{{ format_currency(product.price) }}</span>
+                    {% if product.old_price %}
+                    <span class="old-price">{{ format_currency(product.old_price) }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="product-meta">
+                    <div class="stock-indicator">
+                        {% if product.available > 5 %}
+                        <span class="stock in-stock">
+                            <i class="fas fa-check-circle"></i> In Stock
+                        </span>
+                        {% elif product.available > 0 %}
+                        <span class="stock low-stock">
+                            <i class="fas fa-exclamation-circle"></i> Only {{ product.available }} left
+                        </span>
+                        {% else %}
+                        <span class="stock out-of-stock">
+                            <i class="fas fa-times-circle"></i> Out of Stock
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="product-rating">
+                        <i class="fas fa-star"></i>
+                        <span>4.8</span>
+                        <span class="rating-count">(127 reviews)</span>
+                    </div>
+                </div>
+
+                <div class="product-actions">
+                    <a href="{{ url_for('product_view', product_id=product.id) }}" class="btn-view">
+                        View Details <i class="fas fa-arrow-right"></i>
+                    </a>
+                    {% if product.available > 0 %}
+                    <button class="btn-add-cart" onclick="addToCart({{ product.id }})">
+                        <i class="fas fa-shopping-cart"></i>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i class="fas fa-box-open"></i>
+        </div>
+        <h3>No Products Available</h3>
+        <p>We're currently restocking {{ category.name }} accounts. Please check back later.</p>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">
+            Browse Other Categories <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+    {% endif %}
+</section>
+
+<!-- Pagination -->
+{% if total_pages > 1 %}
+<section class="pagination-section">
+    <div class="pagination">
+        {% if current_page > 1 %}
+        <a href="{{ url_for('category_view', slug=category.slug, page=current_page-1) }}"
+           class="page-link prev">
+            <i class="fas fa-chevron-left"></i>
+        </a>
+        {% endif %}
+
+        {% for page in range(1, total_pages + 1) %}
+            {% if page == current_page %}
+            <span class="page-link active">{{ page }}</span>
+            {% elif page <= 5 or page > total_pages - 5 or (page >= current_page - 2 and page <= current_page + 2) %}
+            <a href="{{ url_for('category_view', slug=category.slug, page=page) }}"
+               class="page-link">{{ page }}</a>
+            {% elif page == 6 and current_page > 5 %}
+            <span class="page-dots">...</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if current_page < total_pages %}
+        <a href="{{ url_for('category_view', slug=category.slug, page=current_page+1) }}"
+           class="page-link next">
+            <i class="fas fa-chevron-right"></i>
+        </a>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Category FAQ Section -->
+<section class="category-faq">
+    <h2 class="faq-title">Frequently Asked Questions about {{ category.name }} Accounts</h2>
+
+    <div class="faq-grid">
+        <div class="faq-item">
+            <div class="faq-question">
+                <i class="fas fa-question-circle"></i>
+                <h4>Are these accounts verified?</h4>
+            </div>
+            <p>Yes, all {{ category.name|lower }} accounts are fully verified and tested before delivery. You'll receive working login credentials immediately after purchase.</p>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                <i class="fas fa-question-circle"></i>
+                <h4>Do you offer replacements?</h4>
+            </div>
+            <p>We provide a 7-day warranty on all accounts. If you experience any issues, contact our support team for a free replacement.</p>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                <i class="fas fa-question-circle"></i>
+                <h4>How fast is delivery?</h4>
+            </div>
+            <p>Delivery is instant! Account details are displayed immediately after successful payment and also sent to your email.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Related Categories -->
+<section class="related-categories">
+    <h3>Popular Categories</h3>
+    <div class="related-grid">
+        <a href="{{ url_for('category_view', slug='facebook') }}" class="related-card">
+            <img src="{{ url_for('static', filename='logos/facebook-logo.png') }}" alt="Facebook">
+            <span>Facebook</span>
+        </a>
+        <a href="{{ url_for('category_view', slug='instagram') }}" class="related-card">
+            <img src="{{ url_for('static', filename='logos/instagram-logo.png') }}" alt="Instagram">
+            <span>Instagram</span>
+        </a>
+        <a href="{{ url_for('category_view', slug='tiktok') }}" class="related-card">
+            <img src="{{ url_for('static', filename='logos/tiktok-logo.png') }}" alt="TikTok">
+            <span>TikTok</span>
+        </a>
+        <a href="{{ url_for('category_view', slug='twitter') }}" class="related-card">
+            <img src="{{ url_for('static', filename='logos/twitter-logo.png') }}" alt="Twitter">
+            <span>Twitter</span>
+        </a>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Sort products function
+function sortProducts(sortBy) {
+    const grid = document.getElementById('products-grid');
+    if (!grid) return;
+    
+    const cards = Array.from(grid.children);
+
+    cards.sort((a, b) => {
+        const priceA = parseFloat(a.dataset.price);
+        const priceB = parseFloat(b.dataset.price);
+        const nameA = a.dataset.name.toLowerCase();
+        const nameB = b.dataset.name.toLowerCase();
+
+        switch(sortBy) {
+            case 'price-low':
+                return priceA - priceB;
+            case 'price-high':
+                return priceB - priceA;
+            case 'name':
+                return nameA.localeCompare(nameB);
+            case 'popular':
+                return parseInt(a.dataset.id || 0) - parseInt(b.dataset.id || 0);
+            default:
+                return 0;
+        }
+    });
+
+    cards.forEach(card => grid.appendChild(card));
+    showNotification('Products sorted', 'success');
+}
+
+// Filter by stock
+function filterStock(filterValue) {
+    const cards = document.querySelectorAll('.product-card');
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+        const stock = parseInt(card.dataset.stock);
+        if (filterValue === 'all' || (filterValue === 'in-stock' && stock > 0)) {
+            card.style.display = 'block';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    const resultsSpan = document.querySelector('.results-count');
+    if (resultsSpan) {
+        resultsSpan.textContent = `Showing ${visibleCount} results`;
+    }
+
+    // Show empty state if no products visible
+    const emptyState = document.querySelector('.empty-state');
+    if (visibleCount === 0) {
+        if (!emptyState) {
+            const newEmptyState = createEmptyState();
+            document.querySelector('.category-products').appendChild(newEmptyState);
+        }
+    } else if (emptyState && !emptyState.classList.contains('products-grid')) {
+        emptyState.remove();
+    }
+}
+
+// Create empty state element
+function createEmptyState() {
+    const div = document.createElement('div');
+    div.className = 'empty-state';
+    div.innerHTML = `
+        <div class="empty-state-icon">
+            <i class="fas fa-filter"></i>
+        </div>
+        <h3>No Products Match Filter</h3>
+        <p>Try adjusting your filter criteria to see more products.</p>
+        <button class="btn btn-outline" onclick="resetFilters()">
+            Clear Filters <i class="fas fa-times"></i>
+        </button>
+    `;
+    return div;
+}
+
+// Reset all filters
+function resetFilters() {
+    document.getElementById('sort').value = 'default';
+    document.getElementById('stock').value = 'all';
+
+    const cards = document.querySelectorAll('.product-card');
+    cards.forEach(card => card.style.display = 'block');
+
+    const emptyState = document.querySelector('.empty-state');
+    if (emptyState && !emptyState.classList.contains('products-grid')) {
+        emptyState.remove();
+    }
+
+    const resultsSpan = document.querySelector('.results-count');
+    if (resultsSpan) {
+        resultsSpan.textContent = `Showing ${cards.length} results`;
+    }
+}
+
+// Add to cart function
+function addToCart(productId) {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    
+    const existingItem = cart.find(item => item.id === productId);
+    
+    if (existingItem) {
+        existingItem.quantity = (existingItem.quantity || 1) + 1;
+        showNotification('Quantity updated in cart!', 'success');
+    } else {
+        cart.push({
+            id: productId,
+            quantity: 1,
+            added_at: new Date().toISOString()
+        });
+        showNotification('Product added to cart!', 'success');
+    }
+    
+    localStorage.setItem('cart', JSON.stringify(cart));
+    
+    if (typeof updateCartCount === 'function') {
+        updateCartCount();
+    }
+}
+
+// Show notification
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+        <span>${message}</span>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+</script>
+{% endblock %}

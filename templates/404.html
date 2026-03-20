@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}404 • Lost in the Melody • Melody Store{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Peak 404 specific styles */
+    .error-404 {
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-404">
+    <!-- Animated Background -->
+    <div class="error-background">
+        <div class="note note-1">♪</div>
+        <div class="note note-2">♫</div>
+        <div class="note note-3">♩</div>
+        <div class="note note-4">♬</div>
+        <div class="note note-5">🎵</div>
+        <div class="note note-6">🎶</div>
+    </div>
+
+    <div class="error-container" data-aos="zoom-in" data-aos-duration="800">
+        <!-- Glitch Effect 404 -->
+        <div class="error-glitch">
+            <h1 class="glitch-number" data-text="404">404</h1>
+        </div>
+        
+        <!-- Broken Record Animation -->
+        <div class="broken-record">
+            <div class="record">
+                <i class="fas fa-compact-disc"></i>
+                <div class="record-groove"></div>
+            </div>
+            <div class="broken-line"></div>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message" data-aos="fade-up" data-aos-delay="200">
+            <h2 class="error-title">Lost in the Melody</h2>
+            <div class="error-divider">
+                <span class="line"></span>
+                <i class="fas fa-music"></i>
+                <span class="line"></span>
+            </div>
+            <p class="error-text">The track you're looking for seems to have skipped...</p>
+            <p class="error-subtext">Don't worry, even the best records skip sometimes!</p>
+        </div>
+
+        <!-- Helpful Links -->
+        <div class="error-help" data-aos="fade-up" data-aos-delay="400">
+            <h3 class="help-title">Maybe try one of these:</h3>
+            <div class="help-grid">
+                <a href="{{ url_for('index') }}" class="help-card">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="{{ url_for('category_view', slug='facebook') }}" class="help-card">
+                    <i class="fab fa-facebook"></i>
+                    <span>Facebook</span>
+                </a>
+                <a href="{{ url_for('category_view', slug='instagram') }}" class="help-card">
+                    <i class="fab fa-instagram"></i>
+                    <span>Instagram</span>
+                </a>
+                <a href="{{ url_for('category_view', slug='tiktok') }}" class="help-card">
+                    <i class="fab fa-tiktok"></i>
+                    <span>TikTok</span>
+                </a>
+                <a href="{{ url_for('my_orders') }}" class="help-card">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>My Orders</span>
+                </a>
+                <a href="#" class="help-card">
+                    <i class="fas fa-headset"></i>
+                    <span>Support</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="error-search" data-aos="fade-up" data-aos-delay="600">
+            <form action="#" method="GET" class="search-form">
+                <input type="text" placeholder="Search for what you're looking for..." class="search-input">
+                <button type="submit" class="search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- Fun Fact -->
+        <div class="error-fact" data-aos="fade-up" data-aos-delay="800">
+            <div class="fact-badge">
+                <i class="fas fa-lightbulb"></i>
+                <span>Did You Know?</span>
+            </div>
+            <p class="fact-text">The 404 error was named after room 404 at CERN where the web was born!</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Peak 404 animations
+    document.addEventListener('DOMContentLoaded', function() {
+        // Glitch effect intensifies on hover
+        const glitch = document.querySelector('.glitch-number');
+        if (glitch) {
+            glitch.addEventListener('mouseenter', function() {
+                this.style.animation = 'none';
+                this.offsetHeight; // Reflow
+                this.style.animation = 'glitch 0.5s infinite';
+            });
+            
+            glitch.addEventListener('mouseleave', function() {
+                this.style.animation = 'glitch 3s infinite';
+            });
+        }
+        
+        // Broken record spin
+        const record = document.querySelector('.record');
+        if (record) {
+            setInterval(() => {
+                record.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+            }, 2000);
+        }
+    });
+</script>
+{% endblock %}

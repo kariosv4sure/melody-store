@@ -1,0 +1,206 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Bulk Upload Accounts - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="upload-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Bulk Upload Accounts</h1>
+            <p class="page-subtitle">Upload multiple accounts at once</p>
+        </div>
+        <a href="{{ url_for('admin_accounts') }}" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Accounts
+        </a>
+    </div>
+    
+    <div class="upload-card">
+        <div class="upload-instructions">
+            <h3><i class="fas fa-info-circle"></i> Instructions</h3>
+            <ul>
+                <li>Format: <code>email|password|2fa|additional_info</code></li>
+                <li>Separate fields with pipe symbol <code>|</code></li>
+                <li>One account per line</li>
+                <li><strong>Required:</strong> email and password</li>
+                <li>2FA and additional info are optional</li>
+            </ul>
+            <div class="example">
+                <strong>Example:</strong>
+                <pre>user1@example.com|password123|
+user2@example.com|pass456|2FA123|
+user3@example.com|securepass||USA account with 2FA</pre>
+            </div>
+        </div>
+        
+        <form method="POST" class="upload-form" id="uploadForm">
+            <div class="form-group">
+                <label for="product_id">Select Product <span class="required">*</span></label>
+                <select id="product_id" name="product_id" required>
+                    <option value="">Choose a product...</option>
+                    {% for product in products %}
+                    <option value="{{ product.id }}">{{ product.name }} (₦{{ product.price }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="accounts">Accounts Data <span class="required">*</span></label>
+                <textarea id="accounts" name="accounts" rows="12" 
+                          placeholder="email@example.com|password|2fa|notes&#10;user2@example.com|pass123||&#10;user3@example.com|securepass|123456|USA account"
+                          required></textarea>
+                <div class="form-hint">
+                    <i class="fas fa-info-circle"></i>
+                    <span id="lineCount">0</span> lines detected
+                </div>
+            </div>
+            
+            <div class="preview-section" id="previewSection" style="display: none;">
+                <h3><i class="fas fa-eye"></i> Preview (First 5 accounts)</h3>
+                <div class="preview-table" id="previewTable"></div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn-primary" id="uploadBtn">
+                    <i class="fas fa-upload"></i> Upload Accounts
+                </button>
+                <button type="button" class="btn-secondary" onclick="previewAccounts()">
+                    <i class="fas fa-eye"></i> Preview
+                </button>
+                <button type="button" class="btn-secondary" onclick="clearForm()">
+                    <i class="fas fa-trash"></i> Clear
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Count lines
+document.getElementById('accounts')?.addEventListener('input', function() {
+    const lines = this.value.split('\n').filter(line => line.trim());
+    document.getElementById('lineCount').textContent = lines.length;
+});
+
+// Preview accounts
+function previewAccounts() {
+    const accountsText = document.getElementById('accounts').value;
+    const lines = accountsText.split('\n').filter(line => line.trim());
+    const previewDiv = document.getElementById('previewSection');
+    const previewTable = document.getElementById('previewTable');
+    
+    if (lines.length === 0) {
+        alert('Please enter account data first');
+        return;
+    }
+    
+    let previewHtml = `
+        <table class="preview-grid">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Email</th>
+                    <th>Password</th>
+                    <th>2FA</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    const previewLines = lines.slice(0, 5);
+    previewLines.forEach((line, index) => {
+        const parts = line.split('|');
+        previewHtml += `
+            <tr>
+                <td>${index + 1}</td>
+                <td><strong>${escapeHtml(parts[0] || '?')}</strong></td>
+                <td>${escapeHtml(parts[1] || '?')}</td>
+                <td>${escapeHtml(parts[2] || '—')}</td>
+                <td>${escapeHtml(parts[3] || '—')}</td>
+            </tr>
+        `;
+    });
+    
+    previewHtml += `
+            </tbody>
+        </table>
+        <div class="preview-summary">
+            <strong>Total:</strong> ${lines.length} accounts ready to upload
+        </div>
+    `;
+    
+    previewTable.innerHTML = previewHtml;
+    previewDiv.style.display = 'block';
+    previewDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Helper to escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function clearForm() {
+    if (confirm('Clear all form data?')) {
+        document.getElementById('accounts').value = '';
+        document.getElementById('product_id').value = '';
+        document.getElementById('lineCount').textContent = '0';
+        document.getElementById('previewSection').style.display = 'none';
+    }
+}
+
+// Validate before upload
+document.getElementById('uploadForm')?.addEventListener('submit', function(e) {
+    const productId = document.getElementById('product_id').value;
+    const accountsText = document.getElementById('accounts').value;
+    const lines = accountsText.split('\n').filter(line => line.trim());
+    
+    if (!productId) {
+        e.preventDefault();
+        alert('Please select a product');
+        return false;
+    }
+    
+    if (lines.length === 0) {
+        e.preventDefault();
+        alert('Please enter account data');
+        return false;
+    }
+    
+    // Validate each line
+    let errors = [];
+    lines.forEach((line, index) => {
+        const parts = line.split('|');
+        if (parts.length < 2) {
+            errors.push(`Line ${index + 1}: Missing required fields (need at least email and password)`);
+        }
+        if (!parts[0] || !parts[0].trim()) {
+            errors.push(`Line ${index + 1}: Email is required`);
+        }
+        if (!parts[1] || !parts[1].trim()) {
+            errors.push(`Line ${index + 1}: Password is required`);
+        }
+    });
+    
+    if (errors.length > 0) {
+        e.preventDefault();
+        alert(`Validation errors:\n${errors.slice(0, 5).join('\n')}${errors.length > 5 ? `\n... and ${errors.length - 5} more` : ''}`);
+        return false;
+    }
+    
+    const confirmMsg = `Upload ${lines.length} accounts for this product?`;
+    if (!confirm(confirmMsg)) {
+        e.preventDefault();
+        return false;
+    }
+    
+    // Show loading state
+    const uploadBtn = document.getElementById('uploadBtn');
+    uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+    uploadBtn.disabled = true;
+});
+</script>
+{% endblock %}

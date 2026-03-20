@@ -1,0 +1,486 @@
+{% extends "base.html" %}
+
+{% block title %}My Orders - Melody Store{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="page-header-content">
+        <h1 class="page-title">Your Orders</h1>
+        <p class="page-subtitle">Showing orders for <span class="email-highlight">{{ email }}</span></p>
+    </div>
+</section>
+
+<div class="orders-list-container">
+    <!-- Summary Card -->
+    <div class="summary-card">
+        <div class="summary-stats">
+            <div class="stat-item">
+                <span class="stat-value">{{ orders|length }}</span>
+                <span class="stat-label">Total Orders</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">
+                    ₦{{ "{:,.0f}".format(orders|sum(attribute='amount')) }}
+                </span>
+                <span class="stat-label">Total Spent</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">
+                    {{ orders|selectattr('account_email')|list|length }}
+                </span>
+                <span class="stat-label">Accounts Delivered</span>
+            </div>
+        </div>
+        
+        <div class="email-actions">
+            <a href="{{ url_for('my_orders') }}" class="btn-change-email">
+                <i class="fas fa-envelope"></i>
+                Change Email
+            </a>
+            <button class="btn-export" onclick="exportOrders()">
+                <i class="fas fa-download"></i>
+                Export List
+            </button>
+        </div>
+    </div>
+
+    {% if orders %}
+    <!-- Orders List -->
+    <div class="orders-list">
+        {% for order in orders %}
+        <div class="order-card" id="order-{{ order.id }}">
+            <div class="order-header">
+                <div class="order-header-left">
+                    <div class="order-icon">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <div class="order-title">
+                        <h3 class="order-number">Order #{{ order.order_number }}</h3>
+                        <span class="order-date">
+                            <i class="far fa-calendar-alt"></i>
+                            {{ order.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                        </span>
+                    </div>
+                </div>
+                <div class="order-status">
+                    <span class="status-badge completed">
+                        <i class="fas fa-check-circle"></i>
+                        Completed
+                    </span>
+                </div>
+            </div>
+            
+            <div class="order-body">
+                <div class="product-info">
+                    <div class="product-image">
+                        <img src="{{ url_for('static', filename='logos/' + (order.product_category|lower if order.product_category else 'default') + '-logo.png') }}" 
+                             alt="{{ order.product_name }}"
+                             onerror="this.src='{{ url_for('static', filename='logos/default-logo.png') }}'">
+                    </div>
+                    <div class="product-details">
+                        <h4 class="product-name">{{ order.product_name }}</h4>
+                        <p class="product-meta">
+                            <span class="meta-item">
+                                <i class="fas fa-tag"></i>
+                                {{ order.product_category or 'General' }}
+                            </span>
+                            <span class="meta-item">
+                                <i class="fas fa-credit-card"></i>
+                                Paid: {{ format_currency(order.amount) }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Account Details (if available) -->
+                {% if order.account_email %}
+                <div class="account-details">
+                    <h5 class="account-title">
+                        <i class="fas fa-key"></i>
+                        Account Credentials
+                    </h5>
+                    
+                    <div class="credentials-grid">
+                        <div class="credential-item">
+                            <span class="credential-label">Email/Username:</span>
+                            <div class="credential-value-group">
+                                <span class="credential-value" id="email-{{ order.id }}">{{ order.account_email }}</span>
+                                <button class="btn-copy" onclick="copyToClipboard('{{ order.account_email }}', 'email-{{ order.id }}')">
+                                    <i class="far fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="credential-item">
+                            <span class="credential-label">Password:</span>
+                            <div class="credential-value-group">
+                                <span class="credential-value password-field" id="password-{{ order.id }}">
+                                    ••••••••••••
+                                </span>
+                                <button class="btn-toggle-password" onclick="togglePassword('{{ order.id }}', '{{ order.account_password }}')">
+                                    <i class="far fa-eye"></i>
+                                </button>
+                                <button class="btn-copy" onclick="copyToClipboard('{{ order.account_password }}', 'password-{{ order.id }}')">
+                                    <i class="far fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {% if order.account_2fa %}
+                        <div class="credential-item">
+                            <span class="credential-label">2FA Code:</span>
+                            <div class="credential-value-group">
+                                <span class="credential-value" id="2fa-{{ order.id }}">{{ order.account_2fa }}</span>
+                                <button class="btn-copy" onclick="copyToClipboard('{{ order.account_2fa }}', '2fa-{{ order.id }}')">
+                                    <i class="far fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if order.account_notes %}
+                        <div class="credential-item full-width">
+                            <span class="credential-label">Additional Info:</span>
+                            <p class="additional-info">{{ order.account_notes }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="account-actions">
+                        <button class="btn-show-all" onclick="toggleAllDetails('{{ order.id }}')">
+                            <i class="fas fa-chevron-down"></i>
+                            Show All Details
+                        </button>
+                    </div>
+                </div>
+                {% else %}
+                <div class="no-account">
+                    <i class="fas fa-hourglass-half"></i>
+                    <p>Account details will appear here once processed</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="order-footer">
+                <div class="payment-info">
+                    <span class="payment-ref">
+                        <i class="fas fa-hashtag"></i>
+                        Ref: {{ order.payment_ref }}
+                    </span>
+                    <span class="payment-method">
+                        <i class="fas fa-credit-card"></i>
+                        Paystack
+                    </span>
+                </div>
+                
+                <div class="order-actions">
+                    <button class="btn-print" onclick="printOrder('{{ order.order_number }}')">
+                        <i class="fas fa-print"></i>
+                        Print
+                    </button>
+                    <a href="#" class="btn-support">
+                        <i class="fas fa-headset"></i>
+                        Need Help?
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination if needed -->
+    {% if total_pages > 1 %}
+    <div class="pagination">
+        {% if current_page > 1 %}
+        <a href="{{ url_for('orders_list', email=email, page=current_page-1) }}" class="page-link">
+            <i class="fas fa-chevron-left"></i>
+        </a>
+        {% endif %}
+        
+        {% for page in range(1, total_pages + 1) %}
+            {% if page == current_page %}
+            <span class="page-link active">{{ page }}</span>
+            {% else %}
+            <a href="{{ url_for('orders_list', email=email, page=page) }}" class="page-link">{{ page }}</a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if current_page < total_pages %}
+        <a href="{{ url_for('orders_list', email=email, page=current_page+1) }}" class="page-link">
+            <i class="fas fa-chevron-right"></i>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <!-- No Orders State -->
+    <div class="no-orders">
+        <div class="no-orders-icon">
+            <i class="fas fa-box-open"></i>
+        </div>
+        <h3>No Orders Found</h3>
+        <p>We couldn't find any orders associated with <strong>{{ email }}</strong></p>
+        
+        <div class="no-orders-actions">
+            <a href="{{ url_for('my_orders') }}" class="btn-try-again">
+                <i class="fas fa-redo-alt"></i>
+                Try Another Email
+            </a>
+            <a href="{{ url_for('index') }}" class="btn-shop">
+                <i class="fas fa-shopping-bag"></i>
+                Start Shopping
+            </a>
+        </div>
+        
+        <!-- Helpful Tips -->
+        <div class="help-tips">
+            <h4>Common Reasons for No Orders:</h4>
+            <ul>
+                <li><i class="fas fa-check-circle"></i> Double-check the email address you used</li>
+                <li><i class="fas fa-check-circle"></i> Orders might be under a different email</li>
+                <li><i class="fas fa-check-circle"></i> New orders may take a few minutes to appear</li>
+                <li><i class="fas fa-check-circle"></i> Contact support if you need assistance</li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Print-friendly stylesheet -->
+<style media="print">
+    @page {
+        size: A4;
+        margin: 1cm;
+    }
+    
+    .navbar,
+    .footer,
+    .page-header,
+    .summary-card,
+    .order-actions,
+    .btn-copy,
+    .btn-toggle-password,
+    .btn-show-all,
+    .no-orders-actions,
+    .help-tips,
+    .pagination {
+        display: none !important;
+    }
+    
+    .order-card {
+        page-break-inside: avoid;
+        border: 1px solid #ddd;
+        margin-bottom: 20px;
+        padding: 15px;
+    }
+    
+    .password-field {
+        display: inline !important;
+    }
+    
+    .credential-value {
+        color: #000 !important;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Copy to clipboard function
+function copyToClipboard(text, elementId) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Show success notification
+        showNotification('Copied to clipboard!', 'success');
+        
+        // Highlight the copied element
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.classList.add('copied');
+            setTimeout(() => {
+                element.classList.remove('copied');
+            }, 500);
+        }
+    }).catch(function(err) {
+        showNotification('Failed to copy', 'error');
+    });
+}
+
+// Toggle password visibility
+function togglePassword(orderId, password) {
+    const passwordField = document.getElementById(`password-${orderId}`);
+    const toggleBtn = event.currentTarget;
+    const icon = toggleBtn.querySelector('i');
+    
+    if (passwordField.textContent === '••••••••••••') {
+        passwordField.textContent = password;
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        passwordField.textContent = '••••••••••••';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+// Toggle all account details
+function toggleAllDetails(orderId) {
+    const orderCard = document.getElementById(`order-${orderId}`);
+    const hiddenDetails = orderCard.querySelectorAll('.credential-item.hidden');
+    const btn = event.currentTarget;
+    const icon = btn.querySelector('i');
+    
+    if (hiddenDetails.length > 0) {
+        // Show hidden details
+        hiddenDetails.forEach(item => item.classList.remove('hidden'));
+        btn.innerHTML = '<i class="fas fa-chevron-up"></i> Show Less';
+    } else {
+        // Hide extra details (if any)
+        const extraItems = orderCard.querySelectorAll('.credential-item.extra');
+        extraItems.forEach(item => item.classList.add('hidden'));
+        btn.innerHTML = '<i class="fas fa-chevron-down"></i> Show All Details';
+    }
+}
+
+// Export orders to CSV
+function exportOrders() {
+    const orders = [
+        {% for order in orders %}
+        {
+            order_number: "{{ order.order_number }}",
+            date: "{{ order.created_at.strftime('%Y-%m-%d %H:%M:%S') }}",
+            product: "{{ order.product_name }}",
+            amount: "{{ order.amount }}",
+            email: "{{ order.account_email }}",
+            payment_ref: "{{ order.payment_ref }}"
+        },
+        {% endfor %}
+    ];
+    
+    if (orders.length === 0) return;
+    
+    // Create CSV content
+    const headers = ['Order Number', 'Date', 'Product', 'Amount', 'Account Email', 'Payment Reference'];
+    const csvContent = [
+        headers.join(','),
+        ...orders.map(order => [
+            order.order_number,
+            order.date,
+            `"${order.product}"`, // Wrap in quotes to handle commas in product name
+            order.amount,
+            order.email,
+            order.payment_ref
+        ].join(','))
+    ].join('\n');
+    
+    // Download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `melody-orders-{{ email }}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showNotification('Orders exported successfully!', 'success');
+}
+
+// Print single order
+function printOrder(orderNumber) {
+    const orderElement = document.getElementById(`order-${orderNumber}`);
+    if (!orderElement) return;
+    
+    // Create print window
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+            <head>
+                <title>Order #${orderNumber}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; }
+                    .print-header { text-align: center; margin-bottom: 30px; }
+                    .print-order { border: 1px solid #ddd; padding: 20px; }
+                    .credentials { margin-top: 20px; }
+                    .credential { margin: 10px 0; }
+                    .label { font-weight: bold; color: #666; }
+                </style>
+            </head>
+            <body>
+                <div class="print-header">
+                    <h1>Melody Store - Order #${orderNumber}</h1>
+                    <p>Printed on ${new Date().toLocaleDateString()}</p>
+                </div>
+                ${orderElement.outerHTML}
+            </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+}
+
+// Show notification
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        <span>${message}</span>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Initialize tooltips and other features
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click handlers for copy buttons
+    document.querySelectorAll('.btn-copy').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+        });
+    });
+    
+    // Add keyboard shortcut for printing (Ctrl+P)
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+            e.preventDefault();
+            window.print();
+        }
+    });
+    
+    // Auto-hide success messages after 5 seconds
+    setTimeout(() => {
+        document.querySelectorAll('.alert-success').forEach(el => {
+            el.style.opacity = '0';
+            setTimeout(() => el.remove(), 300);
+        });
+    }, 5000);
+});
+
+// Add CSS for copied animation
+const style = document.createElement('style');
+style.textContent = `
+    .credential-value.copied {
+        animation: pulse 0.3s ease;
+    }
+    
+    @keyframes pulse {
+        0% { background-color: transparent; }
+        50% { background-color: rgba(37, 99, 235, 0.2); }
+        100% { background-color: transparent; }
+    }
+    
+    .credential-item.hidden {
+        display: none;
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

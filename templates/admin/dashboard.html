@@ -1,0 +1,220 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Dashboard - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">Dashboard</h1>
+        <p class="dashboard-subtitle">Welcome back, {{ session.admin_username }}!</p>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ stats.total_orders }}</h3>
+                <p>Total Orders</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ format_currency(stats.total_revenue) }}</h3>
+                <p>Total Revenue</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-boxes"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ stats.total_products }}</h3>
+                <p>Total Products</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ stats.total_accounts }}</h3>
+                <p>Total Accounts</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Account Status -->
+    <div class="account-stats">
+        <div class="stat-card">
+            <div class="stat-icon green">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ stats.sold_accounts }}</h3>
+                <p>Sold Accounts</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ stats.unsold_accounts }}</h3>
+                <p>Available Accounts</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h2>Quick Actions</h2>
+        <div class="action-buttons">
+            <a href="{{ url_for('admin_product_add') }}" class="action-btn">
+                <i class="fas fa-plus-circle"></i>
+                <span>Add Product</span>
+            </a>
+            <a href="{{ url_for('admin_accounts_upload') }}" class="action-btn">
+                <i class="fas fa-upload"></i>
+                <span>Bulk Upload Accounts</span>
+            </a>
+            <a href="{{ url_for('admin_account_add') }}" class="action-btn">
+                <i class="fas fa-user-plus"></i>
+                <span>Add Single Account</span>
+            </a>
+            <a href="{{ url_for('admin_orders') }}" class="action-btn">
+                <i class="fas fa-eye"></i>
+                <span>View All Orders</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Recent Orders -->
+    <div class="recent-orders">
+        <div class="section-header">
+            <h2>Recent Orders</h2>
+            <a href="{{ url_for('admin_orders') }}" class="view-all">View All →</a>
+        </div>
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Product</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in recent_orders %}
+                    <tr>
+                        <td><strong>{{ order.order_number }}</strong></td>
+                        <td>{{ order.customer_name }}</td>
+                        <td>{{ order.product_name }}</td>
+                        <td>{{ format_currency(order.amount) }}</td>
+                        <td>{{ order.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td class="actions">
+                            <a href="{{ url_for('admin_order_detail', order_id=order.id) }}" class="btn-sm" title="View">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center">No orders yet</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Low Stock Alert -->
+    {% if low_stock %}
+    <div class="low-stock-alert">
+        <div class="section-header">
+            <h2><i class="fas fa-exclamation-triangle"></i> Low Stock Alert</h2>
+        </div>
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Available</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in low_stock %}
+                    <tr>
+                        <td>{{ item.product.name }}</td>
+                        <td class="text-danger"><strong>{{ item.available }}</strong> left</td>
+                        <td>
+                            {% if item.available == 0 %}
+                            <span class="badge badge-danger">Out of Stock</span>
+                            {% else %}
+                            <span class="badge badge-warning">Low Stock</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('admin_accounts_upload') }}?product_id={{ item.product.id }}" class="btn-sm">
+                                <i class="fas fa-plus"></i> Add Accounts
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Category Sales -->
+    <div class="category-sales">
+        <div class="section-header">
+            <h2>Sales by Category</h2>
+        </div>
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Orders</th>
+                        <th>Revenue</th>
+                        <th>Performance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in category_sales %}
+                    <tr>
+                        <td><i class="fas fa-tag"></i> {{ sale.name }}</td>
+                        <td>{{ sale.order_count }}</td>
+                        <td>{{ format_currency(sale.revenue or 0) }}</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ (sale.revenue or 0) / (category_sales[0].revenue or 1) * 100 }}%"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center">No sales yet</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

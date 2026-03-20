@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - {% block title %}Dashboard{% endblock %} | Melody Store</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Admin CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="admin-sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-music"></i>
+                    <h2>Melody Store</h2>
+                </div>
+                <p>Admin Panel</p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('admin_dashboard') }}" class="nav-item {% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                
+                <a href="{{ url_for('admin_products') }}" class="nav-item {% if request.endpoint == 'admin_products' %}active{% endif %}">
+                    <i class="fas fa-box"></i>
+                    <span>Products</span>
+                </a>
+                
+                <a href="{{ url_for('admin_accounts') }}" class="nav-item {% if request.endpoint == 'admin_accounts' %}active{% endif %}">
+                    <i class="fas fa-users"></i>
+                    <span>Accounts</span>
+                </a>
+                
+                <a href="{{ url_for('admin_orders') }}" class="nav-item {% if request.endpoint == 'admin_orders' %}active{% endif %}">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Orders</span>
+                </a>
+                
+                <div class="nav-divider"></div>
+                
+                <a href="{{ url_for('admin_product_add') }}" class="nav-item">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Add Product</span>
+                </a>
+                
+                <a href="{{ url_for('admin_accounts_upload') }}" class="nav-item">
+                    <i class="fas fa-upload"></i>
+                    <span>Bulk Upload</span>
+                </a>
+                
+                <a href="{{ url_for('admin_account_add') }}" class="nav-item">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Add Account</span>
+                </a>
+                
+                <div class="nav-divider"></div>
+                
+                <a href="{{ url_for('index') }}" class="nav-item" target="_blank">
+                    <i class="fas fa-store"></i>
+                    <span>View Store</span>
+                </a>
+                
+                <a href="{{ url_for('admin_logout') }}" class="nav-item logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </nav>
+            
+            <!-- Mobile Sidebar Toggle Button -->
+            <button class="sidebar-toggle" id="sidebar-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <div class="admin-user">
+                    <i class="fas fa-user-circle"></i>
+                    <span>{{ session.admin_username }}</span>
+                    <div class="user-dropdown">
+                        <a href="{{ url_for('admin_logout') }}">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </header>
+            
+            <div class="admin-content">
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible">
+                                <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                                <span>{{ message }}</span>
+                                <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <!-- Page Content -->
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    
+    {% block extra_js %}{% endblock %}
+    
+    <script>
+        // Mobile sidebar toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('admin-sidebar');
+            const mobileToggle = document.getElementById('mobile-menu-toggle');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            
+            function toggleSidebar() {
+                sidebar.classList.toggle('active');
+            }
+            
+            if (mobileToggle) {
+                mobileToggle.addEventListener('click', toggleSidebar);
+            }
+            
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', toggleSidebar);
+            }
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth <= 768) {
+                    if (!sidebar.contains(event.target) && !mobileToggle.contains(event.target)) {
+                        sidebar.classList.remove('active');
+                    }
+                }
+            });
+            
+            // Auto-dismiss alerts after 5 seconds
+            setTimeout(function() {
+                document.querySelectorAll('.alert').forEach(function(alert) {
+                    alert.style.opacity = '0';
+                    setTimeout(function() {
+                        alert.remove();
+                    }, 300);
+                });
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

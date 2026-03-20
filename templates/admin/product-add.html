@@ -1,0 +1,148 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Add Product - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="product-form-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Add New Product</h1>
+            <p class="page-subtitle">Create a new product for your store</p>
+        </div>
+        <a href="{{ url_for('admin_products') }}" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Products
+        </a>
+    </div>
+    
+    <form method="POST" class="form-card" id="productForm">
+        <div class="form-grid">
+            <!-- Left Column -->
+            <div class="form-column">
+                <div class="form-group">
+                    <label for="name">Product Name <span class="required">*</span></label>
+                    <input type="text" id="name" name="name" required 
+                           placeholder="e.g., USA Instagram Account" autofocus>
+                </div>
+                
+                <div class="form-group">
+                    <label for="category_id">Category <span class="required">*</span></label>
+                    <select id="category_id" name="category_id" required>
+                        <option value="">Select Category</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="price">Price (₦) <span class="required">*</span></label>
+                    <input type="number" id="price" name="price" required 
+                           placeholder="e.g., 3500" step="100">
+                    <small class="form-hint">Enter price in Naira (₦)</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="country">Country</label>
+                    <input type="text" id="country" name="country" 
+                           placeholder="e.g., USA, Canada, UK">
+                </div>
+                
+                <div class="form-group">
+                    <label for="is_active">
+                        <input type="checkbox" id="is_active" name="is_active" checked>
+                        Active (visible on store)
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Right Column -->
+            <div class="form-column">
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="4" 
+                              placeholder="Describe the product in detail..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="features">
+                        Features <span class="form-hint">(One per line)</span>
+                    </label>
+                    <textarea id="features" name="features" rows="5" 
+                              placeholder="100+ followers&#10;5+ posts&#10;With 2FA&#10;Email included"></textarea>
+                    <div class="features-preview" id="features-preview"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="rules">
+                        Rules & Guidelines <span class="form-hint">(One per line)</span>
+                    </label>
+                    <textarea id="rules" name="rules" rows="4" 
+                              placeholder="Do not change password for 24 hours&#10;Use VPN if needed&#10;Contact support for issues"></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-save"></i> Save Product
+            </button>
+            <a href="{{ url_for('admin_products') }}" class="btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Preview features count
+document.getElementById('features')?.addEventListener('input', function() {
+    const features = this.value.split('\n').filter(f => f.trim());
+    const preview = document.getElementById('features-preview');
+    if (features.length > 0) {
+        preview.innerHTML = `<span class="badge-info"><i class="fas fa-check-circle"></i> ${features.length} feature${features.length !== 1 ? 's' : ''} added</span>`;
+    } else {
+        preview.innerHTML = '';
+    }
+});
+
+// Preview rules count
+document.getElementById('rules')?.addEventListener('input', function() {
+    const rules = this.value.split('\n').filter(r => r.trim());
+    const preview = document.getElementById('rules-preview');
+    if (!preview) return;
+    if (rules.length > 0) {
+        preview.innerHTML = `<span class="badge-info"><i class="fas fa-gavel"></i> ${rules.length} rule${rules.length !== 1 ? 's' : ''} added</span>`;
+    } else {
+        preview.innerHTML = '';
+    }
+});
+
+// Validate form before submit
+document.getElementById('productForm')?.addEventListener('submit', function(e) {
+    const name = document.getElementById('name').value.trim();
+    const category = document.getElementById('category_id').value;
+    const price = document.getElementById('price').value;
+    
+    if (!name) {
+        e.preventDefault();
+        alert('Please enter a product name');
+        return false;
+    }
+    
+    if (!category) {
+        e.preventDefault();
+        alert('Please select a category');
+        return false;
+    }
+    
+    if (!price || parseFloat(price) <= 0) {
+        e.preventDefault();
+        alert('Please enter a valid price');
+        return false;
+    }
+});
+</script>
+{% endblock %}

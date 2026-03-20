@@ -1,0 +1,321 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Manage Orders - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="orders-management">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Orders</h1>
+            <p class="page-subtitle">Manage and track customer orders</p>
+        </div>
+        <div class="header-stats">
+            <div class="mini-stat">
+                <i class="fas fa-shopping-cart"></i>
+                <span>{{ orders|length }} Total Orders</span>
+            </div>
+            <div class="mini-stat">
+                <i class="fas fa-money-bill-wave"></i>
+                <span>₦{{ "{:,.0f}".format(orders|sum(attribute='amount')) }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Search and Filter Bar -->
+    <div class="search-filter-bar">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search by order number, customer name, or email..." onkeyup="filterOrders()">
+        </div>
+        <div class="filter-group">
+            <select id="dateFilter" onchange="filterOrders()">
+                <option value="all">All Time</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+            </select>
+            <select id="statusFilter" onchange="filterOrders()">
+                <option value="all">All Orders</option>
+                <option value="paid">Paid</option>
+                <option value="delivered">Delivered</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- Orders Table -->
+    <div class="table-responsive">
+        <table class="admin-table orders-table" id="ordersTable">
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Customer</th>
+                    <th>Product</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr data-date="{{ order.created_at.strftime('%Y-%m-%d') }}" data-status="paid">
+                    <td class="order-number">
+                        <strong>#{{ order.order_number }}</strong>
+                        <br>
+                        <small class="text-muted">{{ order.payment_ref[:8] }}...</small>
+                    </td>
+                    <td>
+                        <div class="customer-info">
+                            <strong>{{ order.customer_name }}</strong>
+                            <br>
+                            <small>{{ order.customer_email }}</small>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="product-info">
+                            <span class="product-name">{{ order.product_name }}</span>
+                            <br>
+                            <small class="text-muted">{{ order.product_category }}</small>
+                        </div>
+                    </td>
+                    <td class="amount-cell">
+                        <span class="amount">{{ format_currency(order.amount) }}</span>
+                    </td>
+                    <td>
+                        <div class="date-info">
+                            <strong>{{ order.created_at.strftime('%b %d, %Y') }}</strong>
+                            <br>
+                            <small>{{ order.created_at.strftime('%I:%M %p') }}</small>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="order-status status-delivered">
+                            <i class="fas fa-check-circle"></i> Delivered
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <a href="{{ url_for('admin_order_detail', order_id=order.id) }}" class="btn-icon view" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <button onclick="resendOrderEmail({{ order.id }})" class="btn-icon email" title="Resend Credentials">
+                            <i class="fas fa-envelope"></i>
+                        </button>
+                        <button onclick="printOrder('{{ order.order_number }}')" class="btn-icon print" title="Print Order">
+                            <i class="fas fa-print"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center">
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>No orders found</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination (if needed) -->
+    {% if orders|length > 20 %}
+    <div class="pagination">
+        <button class="page-btn" onclick="previousPage()"><i class="fas fa-chevron-left"></i></button>
+        <span class="page-info">Page 1 of {{ (orders|length / 20)|round(0, 'ceil')|int }}</span>
+        <button class="page-btn" onclick="nextPage()"><i class="fas fa-chevron-right"></i></button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Resend Email Modal -->
+<div class="modal" id="resendModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Resend Account Credentials</h3>
+            <button class="modal-close" onclick="closeResendModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Resend account credentials to:</p>
+            <div class="customer-details" id="resendCustomerDetails"></div>
+            <div class="credentials-preview" id="credentialsPreview"></div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-secondary" onclick="closeResendModal()">Cancel</button>
+            <button type="button" class="btn-primary" onclick="confirmResend()">Send Email</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentOrderId = null;
+let currentOrderData = null;
+
+// Filter orders function
+function filterOrders() {
+    const searchValue = document.getElementById('searchInput').value.toLowerCase();
+    const dateFilter = document.getElementById('dateFilter').value;
+    const statusFilter = document.getElementById('statusFilter').value;
+    const rows = document.querySelectorAll('#ordersTable tbody tr');
+    let visibleCount = 0;
+    
+    const today = new Date().toISOString().split('T')[0];
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const monthAgo = new Date();
+    monthAgo.setMonth(monthAgo.getMonth() - 1);
+    
+    rows.forEach(row => {
+        if (row.cells.length === 1) return;
+        
+        const orderNumber = row.cells[0].innerText.toLowerCase();
+        const customer = row.cells[1].innerText.toLowerCase();
+        const product = row.cells[2].innerText.toLowerCase();
+        const orderDate = row.getAttribute('data-date');
+        const orderStatus = row.getAttribute('data-status');
+        
+        let matchesSearch = orderNumber.includes(searchValue) || 
+                           customer.includes(searchValue) || 
+                           product.includes(searchValue);
+        
+        let matchesDate = true;
+        if (dateFilter === 'today') {
+            matchesDate = orderDate === today;
+        } else if (dateFilter === 'week') {
+            matchesDate = new Date(orderDate) >= weekAgo;
+        } else if (dateFilter === 'month') {
+            matchesDate = new Date(orderDate) >= monthAgo;
+        }
+        
+        let matchesStatus = statusFilter === 'all' || orderStatus === statusFilter;
+        
+        if (matchesSearch && matchesDate && matchesStatus) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Update results count
+    const resultsSpan = document.querySelector('.results-count');
+    if (resultsSpan) {
+        resultsSpan.textContent = `${visibleCount} orders found`;
+    }
+}
+
+// Resend order email
+function resendOrderEmail(orderId) {
+    currentOrderId = orderId;
+    // Fetch order details from server (you'll need an API endpoint)
+    fetch(`/api/order/${orderId}`)
+        .then(response => response.json())
+        .then(data => {
+            currentOrderData = data;
+            const modal = document.getElementById('resendModal');
+            const customerDetails = document.getElementById('resendCustomerDetails');
+            const credentialsPreview = document.getElementById('credentialsPreview');
+            
+            customerDetails.innerHTML = `
+                <div class="customer-card">
+                    <p><strong>${data.customer_name}</strong></p>
+                    <p>${data.customer_email}</p>
+                </div>
+            `;
+            
+            credentialsPreview.innerHTML = `
+                <div class="credentials-card">
+                    <h4>Account Details</h4>
+                    <div class="cred-row">
+                        <span class="cred-label">Email:</span>
+                        <span class="cred-value">${data.account_email || 'N/A'}</span>
+                    </div>
+                    <div class="cred-row">
+                        <span class="cred-label">Password:</span>
+                        <span class="cred-value">${data.account_password || 'N/A'}</span>
+                    </div>
+                    ${data.account_2fa ? `
+                    <div class="cred-row">
+                        <span class="cred-label">2FA:</span>
+                        <span class="cred-value">${data.account_2fa}</span>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            modal.classList.add('show');
+        });
+}
+
+function confirmResend() {
+    if (currentOrderId && currentOrderData) {
+        fetch(`/admin/order/${currentOrderId}/resend`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Email resent successfully!');
+                closeResendModal();
+            } else {
+                alert('Failed to resend email: ' + data.message);
+            }
+        });
+    }
+}
+
+function closeResendModal() {
+    const modal = document.getElementById('resendModal');
+    modal.classList.remove('show');
+}
+
+// Print order
+function printOrder(orderNumber) {
+    window.open(`/admin/order/${orderNumber}/print`, '_blank');
+}
+
+// Pagination (simple)
+let currentPage = 1;
+const rowsPerPage = 20;
+
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        updatePage();
+    }
+}
+
+function nextPage() {
+    const totalPages = Math.ceil(document.querySelectorAll('#ordersTable tbody tr:not([style*="display: none"])').length / rowsPerPage);
+    if (currentPage < totalPages) {
+        currentPage++;
+        updatePage();
+    }
+}
+
+function updatePage() {
+    const rows = document.querySelectorAll('#ordersTable tbody tr');
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    
+    rows.forEach((row, index) => {
+        if (index >= start && index < end && row.style.display !== 'none') {
+            row.style.display = '';
+        } else if (row.style.display !== 'none') {
+            row.style.display = 'none';
+        }
+    });
+}
+
+// Auto-refresh every 30 seconds (optional)
+setInterval(() => {
+    location.reload();
+}, 30000);
+</script>
+{% endblock %}

@@ -1,0 +1,224 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Add Account - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="account-form-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Add Single Account</h1>
+            <p class="page-subtitle">Manually add a new account to inventory</p>
+        </div>
+        <a href="{{ url_for('admin_accounts') }}" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Accounts
+        </a>
+    </div>
+    
+    <form method="POST" class="form-card" id="accountForm">
+        <div class="form-grid">
+            <!-- Left Column -->
+            <div class="form-column">
+                <div class="form-group">
+                    <label for="product_id">Product <span class="required">*</span></label>
+                    <select id="product_id" name="product_id" required>
+                        <option value="">Select Product</option>
+                        {% for product in products %}
+                        <option value="{{ product.id }}">{{ product.name }} (₦{{ product.price }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="account_email">Email / Username <span class="required">*</span></label>
+                    <input type="email" id="account_email" name="account_email" required 
+                           placeholder="user@example.com" autofocus>
+                </div>
+                
+                <div class="form-group">
+                    <label for="account_password">Password <span class="required">*</span></label>
+                    <div class="password-input-group">
+                        <input type="password" id="account_password" name="account_password" required 
+                               placeholder="Enter password">
+                        <button type="button" class="toggle-password-btn" onclick="togglePasswordField()">
+                            <i class="far fa-eye" id="passwordToggleIcon"></i>
+                        </button>
+                    </div>
+                    <div class="password-strength" id="passwordStrength"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="account_2fa">2FA / Backup Code</label>
+                    <input type="text" id="account_2fa" name="account_2fa" 
+                           placeholder="2FA code or backup key">
+                </div>
+            </div>
+            
+            <!-- Right Column -->
+            <div class="form-column">
+                <div class="form-group">
+                    <label for="account_phone">Phone Number</label>
+                    <input type="tel" id="account_phone" name="account_phone" 
+                           placeholder="+1234567890">
+                </div>
+                
+                <div class="form-group">
+                    <label for="additional_info">Additional Information</label>
+                    <textarea id="additional_info" name="additional_info" rows="3" 
+                              placeholder="Any extra details about this account..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notes">Admin Notes (internal only)</label>
+                    <textarea id="notes" name="notes" rows="3" 
+                              placeholder="Private notes about this account..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="account_cookies">Cookies / Session Data (JSON)</label>
+                    <textarea id="account_cookies" name="account_cookies" rows="2" 
+                              placeholder='{"session": "value"}'></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Preview Card -->
+        <div class="preview-card">
+            <h3><i class="fas fa-eye"></i> Preview</h3>
+            <div class="preview-content">
+                <div class="preview-item">
+                    <span class="preview-label">Product:</span>
+                    <span id="previewProduct">—</span>
+                </div>
+                <div class="preview-item">
+                    <span class="preview-label">Email:</span>
+                    <span id="previewEmail">—</span>
+                </div>
+                <div class="preview-item">
+                    <span class="preview-label">2FA:</span>
+                    <span id="preview2fa">—</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-save"></i> Add Account
+            </button>
+            <button type="button" class="btn-secondary" onclick="resetForm()">
+                <i class="fas fa-undo"></i> Reset
+            </button>
+            <a href="{{ url_for('admin_accounts') }}" class="btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Preview updates
+document.getElementById('product_id')?.addEventListener('change', function() {
+    const select = this;
+    const selectedOption = select.options[select.selectedIndex];
+    document.getElementById('previewProduct').textContent = selectedOption.text || '—';
+});
+
+document.getElementById('account_email')?.addEventListener('input', function() {
+    document.getElementById('previewEmail').textContent = this.value || '—';
+});
+
+document.getElementById('account_2fa')?.addEventListener('input', function() {
+    document.getElementById('preview2fa').textContent = this.value ? '✓ Set' : '—';
+});
+
+// Password strength meter
+function checkPasswordStrength(password) {
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (password.match(/[a-z]+/)) strength++;
+    if (password.match(/[A-Z]+/)) strength++;
+    if (password.match(/[0-9]+/)) strength++;
+    if (password.match(/[$@#&!]+/)) strength++;
+    
+    const strengthMap = {
+        0: { text: 'Very Weak', class: 'strength-0' },
+        1: { text: 'Weak', class: 'strength-1' },
+        2: { text: 'Fair', class: 'strength-2' },
+        3: { text: 'Good', class: 'strength-3' },
+        4: { text: 'Strong', class: 'strength-4' },
+        5: { text: 'Very Strong', class: 'strength-5' }
+    };
+    
+    return strengthMap[strength] || strengthMap[0];
+}
+
+document.getElementById('account_password')?.addEventListener('input', function() {
+    const password = this.value;
+    const strength = checkPasswordStrength(password);
+    const strengthDiv = document.getElementById('passwordStrength');
+    
+    strengthDiv.innerHTML = `<div class="strength-meter ${strength.class}">
+        <div class="strength-fill" style="width: ${(Object.keys(strength).length / 5) * 100}%"></div>
+        <span>${strength.text}</span>
+    </div>`;
+});
+
+// Toggle password visibility
+function togglePasswordField() {
+    const passwordInput = document.getElementById('account_password');
+    const toggleIcon = document.getElementById('passwordToggleIcon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    }
+}
+
+function resetForm() {
+    if (confirm('Reset all form fields?')) {
+        document.getElementById('accountForm').reset();
+        document.getElementById('previewProduct').textContent = '—';
+        document.getElementById('previewEmail').textContent = '—';
+        document.getElementById('preview2fa').textContent = '—';
+        document.getElementById('passwordStrength').innerHTML = '';
+    }
+}
+
+// Form validation
+document.getElementById('accountForm')?.addEventListener('submit', function(e) {
+    const product = document.getElementById('product_id').value;
+    const email = document.getElementById('account_email').value;
+    const password = document.getElementById('account_password').value;
+    
+    if (!product) {
+        e.preventDefault();
+        alert('Please select a product');
+        return false;
+    }
+    
+    if (!email) {
+        e.preventDefault();
+        alert('Please enter an email/username');
+        return false;
+    }
+    
+    if (!password) {
+        e.preventDefault();
+        alert('Please enter a password');
+        return false;
+    }
+    
+    if (password.length < 6) {
+        e.preventDefault();
+        alert('Password must be at least 6 characters');
+        return false;
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,280 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Test Email - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="test-email-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Test Email</h1>
+            <p class="page-subtitle">Send a test email to verify your email configuration</p>
+        </div>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+    
+    <div class="test-email-card">
+        <div class="card-icon">
+            <i class="fas fa-envelope-open-text"></i>
+        </div>
+        
+        <h3>Email Configuration Test</h3>
+        <p>Enter your name and email address to receive a test email. This will help verify that your email system is working correctly.</p>
+        
+        <form method="POST" class="test-email-form">
+            <div class="form-group">
+                <label for="name">
+                    <i class="fas fa-user"></i> Your Name
+                </label>
+                <input type="text" id="name" name="name" 
+                       placeholder="Enter your name" 
+                       value="{{ session.admin_username }}" 
+                       class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">
+                    <i class="fas fa-envelope"></i> Email Address
+                </label>
+                <input type="email" id="email" name="email" 
+                       placeholder="you@example.com" 
+                       value="{{ email_config.username }}" 
+                       class="form-control" required>
+                <small class="form-hint">Enter the email address where you want to receive the test email</small>
+            </div>
+            
+            <div class="email-info">
+                <div class="info-item">
+                    <i class="fas fa-server"></i>
+                    <span>SMTP Server: <strong>{{ email_config.server }}</strong></span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-plug"></i>
+                    <span>Port: <strong>{{ email_config.port }}</strong></span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-lock"></i>
+                    <span>TLS: <strong>{{ 'Enabled' if email_config.tls else 'Disabled' }}</strong></span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-user-circle"></i>
+                    <span>From: <strong>{{ email_config.username }}</strong></span>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-paper-plane"></i> Send Test Email
+                </button>
+                <button type="button" class="btn-secondary" onclick="window.location.reload()">
+                    <i class="fas fa-undo"></i> Reset
+                </button>
+            </div>
+        </form>
+        
+        <div class="help-tip">
+            <i class="fas fa-lightbulb"></i>
+            <div>
+                <strong>💡 Tip:</strong> If you don't receive the test email, check:
+                <ul>
+                    <li>Your email configuration in .env file</li>
+                    <li>SMTP server and port settings</li>
+                    <li>Gmail app password (if using Gmail)</li>
+                    <li>Spam/junk folder</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.test-email-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.test-email-card {
+    background: var(--white);
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+}
+
+.card-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    color: white;
+    font-size: 2rem;
+}
+
+.test-email-card h3 {
+    font-size: 1.25rem;
+    color: var(--dark);
+    margin-bottom: 0.5rem;
+}
+
+.test-email-card p {
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+}
+
+.test-email-form {
+    text-align: left;
+    margin-top: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--dark);
+}
+
+.form-group label i {
+    color: var(--primary);
+    margin-right: 0.5rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--gray);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-hint {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--text-light);
+}
+
+.email-info {
+    background: var(--light);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 1.5rem 0;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    font-size: 0.875rem;
+    color: var(--text);
+}
+
+.info-item i {
+    width: 20px;
+    color: var(--primary);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.btn-primary {
+    flex: 2;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.btn-secondary {
+    flex: 1;
+    padding: 0.75rem;
+    background: var(--light);
+    color: var(--text);
+    border: 1px solid var(--gray);
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background: var(--gray);
+}
+
+.help-tip {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding: 1rem;
+    background: #fff3cd;
+    border-radius: 0.5rem;
+    border-left: 4px solid #f59e0b;
+    text-align: left;
+}
+
+.help-tip i {
+    color: #f59e0b;
+    font-size: 1.25rem;
+}
+
+.help-tip ul {
+    margin: 0.5rem 0 0 1.5rem;
+    font-size: 0.75rem;
+    color: #856404;
+}
+
+.help-tip li {
+    margin: 0.25rem 0;
+}
+
+@media (max-width: 768px) {
+    .test-email-card {
+        padding: 1.5rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .email-info {
+        font-size: 0.75rem;
+    }
+}
+</style>
+{% endblock %}

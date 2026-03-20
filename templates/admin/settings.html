@@ -1,0 +1,630 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Settings - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Settings</h1>
+            <p class="page-subtitle">Configure your store settings and preferences</p>
+        </div>
+        <button onclick="saveAllSettings()" class="btn-primary">
+            <i class="fas fa-save"></i> Save All Changes
+        </button>
+    </div>
+    
+    <!-- Settings Tabs -->
+    <div class="settings-tabs">
+        <button class="tab-btn active" onclick="switchTab('general')">
+            <i class="fas fa-cog"></i> General
+        </button>
+        <button class="tab-btn" onclick="switchTab('payment')">
+            <i class="fas fa-credit-card"></i> Payment
+        </button>
+        <button class="tab-btn" onclick="switchTab('email')">
+            <i class="fas fa-envelope"></i> Email
+        </button>
+        <button class="tab-btn" onclick="switchTab('store')">
+            <i class="fas fa-store"></i> Store
+        </button>
+        <button class="tab-btn" onclick="switchTab('security')">
+            <i class="fas fa-shield-alt"></i> Security
+        </button>
+        <button class="tab-btn" onclick="switchTab('backup')">
+            <i class="fas fa-database"></i> Backup
+        </button>
+    </div>
+    
+    <!-- General Settings Tab -->
+    <div id="general-tab" class="settings-tab active">
+        <div class="settings-card">
+            <h3><i class="fas fa-store"></i> Store Information</h3>
+            <div class="settings-form">
+                <div class="form-group">
+                    <label for="store_name">Store Name</label>
+                    <input type="text" id="store_name" name="store_name" value="Melody Store" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="store_tagline">Store Tagline</label>
+                    <input type="text" id="store_tagline" name="store_tagline" value="Premium Digital Accounts - Instant Delivery" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="store_email">Contact Email</label>
+                    <input type="email" id="store_email" name="store_email" value="support@melodystore.com" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="store_phone">Contact Phone</label>
+                    <input type="tel" id="store_phone" name="store_phone" value="+234 800 000 0000" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="store_address">Store Address</label>
+                    <textarea id="store_address" name="store_address" rows="3" class="form-control">Lagos, Nigeria</textarea>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-card">
+            <h3><i class="fas fa-chart-line"></i> Analytics & Tracking</h3>
+            <div class="settings-form">
+                <div class="form-group">
+                    <label for="google_analytics">Google Analytics ID</label>
+                    <input type="text" id="google_analytics" name="google_analytics" placeholder="UA-XXXXXXXXX-X" class="form-control">
+                    <small class="form-hint">Enter your Google Analytics tracking ID</small>
+                </div>
+                <div class="form-group">
+                    <label for="facebook_pixel">Facebook Pixel ID</label>
+                    <input type="text" id="facebook_pixel" name="facebook_pixel" placeholder="XXXXXXXXXXXXXXX" class="form-control">
+                    <small class="form-hint">Enter your Facebook Pixel ID for tracking</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment Settings Tab -->
+    <div id="payment-tab" class="settings-tab">
+        <div class="settings-card">
+            <h3><i class="fas fa-credit-card"></i> Paystack Configuration</h3>
+            <div class="settings-form">
+                <div class="form-group">
+                    <label for="paystack_public_key">Paystack Public Key</label>
+                    <input type="text" id="paystack_public_key" name="paystack_public_key" 
+                           value="pk_live_xxxxxxxxxxxxx" class="form-control">
+                    <small class="form-hint">Your Paystack public key from dashboard</small>
+                </div>
+                <div class="form-group">
+                    <label for="paystack_secret_key">Paystack Secret Key</label>
+                    <input type="password" id="paystack_secret_key" name="paystack_secret_key" 
+                           value="sk_live_xxxxxxxxxxxxx" class="form-control">
+                    <small class="form-hint">Keep this secure - never share publicly</small>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="paystack_test_mode" name="paystack_test_mode">
+                        Enable Test Mode
+                    </label>
+                    <small class="form-hint">Use test keys for development/testing</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-card">
+            <h3><i class="fas fa-percent"></i> Tax & Fees</h3>
+            <div class="settings-form">
+                <div class="form-group">
+                    <label for="tax_rate">Tax Rate (%)</label>
+                    <input type="number" id="tax_rate" name="tax_rate" value="0" step="0.1" class="form-control">
+                    <small class="form-hint">Applied to all orders (0 for no tax)</small>
+                </div>
+                <div class="form-group">
+                    <label for="processing_fee">Processing Fee (%)</label>
+                    <input type="number" id="processing_fee" name="processing_fee" value="1.5" step="0.1" class="form-control">
+                    <small class="form-hint">Payment processing fee (default: 1.5%)</small>
+                </div>
+                <div class="form-group">
+                    <label for="currency">Currency</label>
+                    <select id="currency" name="currency" class="form-control">
+                        <option value="NGN" selected>Nigerian Naira (₦)</option>
+                        <option value="USD">US Dollar ($)</option>
+                        <option value="GBP">British Pound (£)</option>
+                        <option value="EUR">Euro (€)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Email Settings Tab -->
+    <div id="email-tab" class="settings-tab">
+        <div class="settings-card">
+            <h3><i class="fas fa-envelope"></i> SMTP Configuration</h3>
+            <div class="settings-form">
+                <div class="form-group">
+                    <label for="mail_server">SMTP Server</label>
+                    <input type="text" id="mail_server" name="mail_server" value="smtp.gmail.com" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="mail_port">SMTP Port</label>
+                    <input type="number" id="mail_port" name="mail_port" value="587" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="mail_username">SMTP Username</label>
+                    <input type="email" id="mail_username" name="mail_username" value="your-email@gmail.com" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="mail_password">SMTP Password</label>
+                    <input type="password" id="mail_password" name="mail_password" class="form-control">
+                    <small class="form-hint">App password recommended for Gmail</small>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="mail_tls" name="mail_tls" checked>
+                        Use TLS
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-card">
+            <h3><i class="fas fa-envelope-open-text"></i> Email Templates</h3>
+            <div class="settings-form">
+                <div class="form-group">
+                    <label for="order_confirmation_subject">Order Confirmation Subject</label>
+                    <input type="text" id="order_confirmation_subject" name="order_confirmation_subject" 
+                           value="Order Confirmed - #{order_number}" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="order_confirmation_template">Order Confirmation Template</label>
+                    <textarea id="order_confirmation_template" name="order_confirmation_template" rows="6" class="form-control">
+Dear {customer_name},
+
+Thank you for your order! Your account details are below:
+
+Product: {product_name}
+Amount: ₦{amount}
+
+Account Credentials:
+Email: {account_email}
+Password: {account_password}
+{account_2fa}
+
+Best regards,
+Melody Store Team</textarea>
+                    <small class="form-hint">Available variables: {customer_name}, {order_number}, {product_name}, {amount}, {account_email}, {account_password}, {account_2fa}</small>
+                </div>
+                <div class="form-group">
+                    <button class="btn-secondary" onclick="testEmail()">
+                        <i class="fas fa-paper-plane"></i> Send Test Email
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Store Settings Tab -->
+    <div id="store-tab" class="settings-tab">
+        <div class="settings-card">
+            <h3><i class="fas fa-palette"></i> Appearance</h3>
+            <div class="settings-form">
+                <div class="form-group">
+                    <label for="primary_color">Primary Color</label>
+                    <input type="color" id="primary_color" name="primary_color" value="#2563eb" class="color-picker">
+                    <span id="primary_color_value">#2563eb</span>
+                </div>
+                <div class="form-group">
+                    <label for="accent_color">Accent Color</label>
+                    <input type="color" id="accent_color" name="accent_color" value="#1d4ed8" class="color-picker">
+                    <span id="accent_color_value">#1d4ed8</span>
+                </div>
+                <div class="form-group">
+                    <label for="logo">Store Logo</label>
+                    <input type="file" id="logo" name="logo" accept="image/*" class="form-control">
+                    <div class="logo-preview">
+                        <img src="{{ url_for('static', filename='logos/melody-logo.png') }}" alt="Current Logo" width="100">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-card">
+            <h3><i class="fas fa-truck"></i> Shipping Settings</h3>
+            <div class="settings-form">
+                <div class="form-group">
+                    <label for="free_shipping_threshold">Free Shipping Threshold (₦)</label>
+                    <input type="number" id="free_shipping_threshold" name="free_shipping_threshold" value="0" class="form-control">
+                    <small class="form-hint">Orders above this amount get free shipping (0 = always free)</small>
+                </div>
+                <div class="form-group">
+                    <label for="shipping_fee">Standard Shipping Fee (₦)</label>
+                    <input type="number" id="shipping_fee" name="shipping_fee" value="0" class="form-control">
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-card">
+            <h3><i class="fas fa-bullhorn"></i> Announcements</h3>
+            <div class="settings-form">
+                <div class="form-group">
+                    <label for="announcement_text">Announcement Banner Text</label>
+                    <input type="text" id="announcement_text" name="announcement_text" 
+                           value="✨ Instant Delivery - Get your account immediately after payment ✨" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="announcement_enabled" name="announcement_enabled" checked>
+                        Show Announcement Banner
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Security Settings Tab -->
+    <div id="security-tab" class="settings-tab">
+        <div class="settings-card">
+            <h3><i class="fas fa-user-lock"></i> Admin Security</h3>
+            <div class="settings-form">
+                <div class="form-group">
+                    <label for="current_password">Current Password</label>
+                    <input type="password" id="current_password" name="current_password" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="new_password">New Password</label>
+                    <input type="password" id="new_password" name="new_password" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">Confirm New Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" class="form-control">
+                </div>
+                <div class="form-group">
+                    <button class="btn-primary" onclick="changePassword()">
+                        <i class="fas fa-key"></i> Change Password
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-card">
+            <h3><i class="fas fa-shield-virus"></i> Security Features</h3>
+            <div class="settings-form">
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="two_factor_auth" name="two_factor_auth">
+                        Enable Two-Factor Authentication
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="session_timeout" name="session_timeout" checked>
+                        Auto Logout After Inactivity (30 minutes)
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="login_notifications" name="login_notifications" checked>
+                        Email Notifications on New Login
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-card">
+            <h3><i class="fas fa-ip"></i> IP Whitelist</h3>
+            <div class="settings-form">
+                <div class="form-group">
+                    <label for="ip_whitelist">Allowed IP Addresses (one per line)</label>
+                    <textarea id="ip_whitelist" name="ip_whitelist" rows="4" class="form-control" placeholder="192.168.1.1
+10.0.0.1
+::1"></textarea>
+                    <small class="form-hint">Leave empty to allow all IPs</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Backup Settings Tab -->
+    <div id="backup-tab" class="settings-tab">
+        <div class="settings-card">
+            <h3><i class="fas fa-database"></i> Database Backup</h3>
+            <div class="settings-form">
+                <div class="backup-stats">
+                    <div class="stat">
+                        <span class="stat-label">Last Backup:</span>
+                        <span class="stat-value">{{ last_backup or 'Never' }}</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Database Size:</span>
+                        <span class="stat-value">{{ db_size or 'N/A' }}</span>
+                    </div>
+                </div>
+                <div class="backup-actions">
+                    <button class="btn-primary" onclick="createBackup()">
+                        <i class="fas fa-database"></i> Create Backup Now
+                    </button>
+                    <button class="btn-secondary" onclick="downloadBackup()">
+                        <i class="fas fa-download"></i> Download Backup
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-card">
+            <h3><i class="fas fa-history"></i> Automatic Backups</h3>
+            <div class="settings-form">
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="auto_backup" name="auto_backup" checked>
+                        Enable Automatic Backups
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="backup_frequency">Backup Frequency</label>
+                    <select id="backup_frequency" name="backup_frequency" class="form-control">
+                        <option value="daily">Daily</option>
+                        <option value="weekly" selected>Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="backup_retention">Retention Period (days)</label>
+                    <input type="number" id="backup_retention" name="backup_retention" value="30" class="form-control">
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-card">
+            <h3><i class="fas fa-export"></i> Export Data</h3>
+            <div class="settings-form">
+                <div class="export-buttons">
+                    <button class="btn-secondary" onclick="exportData('orders')">
+                        <i class="fas fa-file-excel"></i> Export Orders (CSV)
+                    </button>
+                    <button class="btn-secondary" onclick="exportData('products')">
+                        <i class="fas fa-file-excel"></i> Export Products (CSV)
+                    </button>
+                    <button class="btn-secondary" onclick="exportData('customers')">
+                        <i class="fas fa-file-excel"></i> Export Customers (CSV)
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-card danger-zone">
+            <h3><i class="fas fa-exclamation-triangle"></i> Danger Zone</h3>
+            <div class="settings-form">
+                <div class="danger-actions">
+                    <button class="btn-danger" onclick="clearCache()">
+                        <i class="fas fa-trash"></i> Clear Cache
+                    </button>
+                    <button class="btn-danger" onclick="resetSettings()">
+                        <i class="fas fa-undo"></i> Reset to Defaults
+                    </button>
+                    <button class="btn-danger" onclick="deleteAllData()">
+                        <i class="fas fa-skull"></i> Delete All Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Tab switching
+function switchTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.settings-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    // Remove active class from all buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    // Show selected tab
+    document.getElementById(`${tabName}-tab`).classList.add('active');
+    // Add active class to clicked button
+    event.currentTarget.classList.add('active');
+}
+
+// Save all settings
+function saveAllSettings() {
+    const settings = {
+        store_name: document.getElementById('store_name').value,
+        store_tagline: document.getElementById('store_tagline').value,
+        store_email: document.getElementById('store_email').value,
+        store_phone: document.getElementById('store_phone').value,
+        store_address: document.getElementById('store_address').value,
+        // Add more settings as needed
+    };
+    
+    fetch('/admin/settings/save', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(settings)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Settings saved successfully!', 'success');
+        } else {
+            showNotification('Error saving settings', 'error');
+        }
+    });
+}
+
+// Test email
+function testEmail() {
+    const testEmail = prompt('Enter email address to send test email:');
+    if (testEmail) {
+        fetch('/admin/settings/test-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: testEmail })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Test email sent!', 'success');
+            } else {
+                showNotification('Failed to send test email', 'error');
+            }
+        });
+    }
+}
+
+// Change password
+function changePassword() {
+    const currentPassword = document.getElementById('current_password').value;
+    const newPassword = document.getElementById('new_password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+    
+    if (!currentPassword || !newPassword) {
+        showNotification('Please fill in all fields', 'error');
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        showNotification('Passwords do not match', 'error');
+        return;
+    }
+    
+    if (newPassword.length < 6) {
+        showNotification('Password must be at least 6 characters', 'error');
+        return;
+    }
+    
+    fetch('/admin/change-password', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            current_password: currentPassword,
+            new_password: newPassword
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Password changed successfully!', 'success');
+            document.getElementById('current_password').value = '';
+            document.getElementById('new_password').value = '';
+            document.getElementById('confirm_password').value = '';
+        } else {
+            showNotification(data.message || 'Error changing password', 'error');
+        }
+    });
+}
+
+// Create backup
+function createBackup() {
+    fetch('/admin/backup/create', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Backup created successfully!', 'success');
+        } else {
+            showNotification('Failed to create backup', 'error');
+        }
+    });
+}
+
+// Download backup
+function downloadBackup() {
+    window.location.href = '/admin/backup/download';
+}
+
+// Export data
+function exportData(type) {
+    window.location.href = `/admin/export/${type}`;
+}
+
+// Clear cache
+function clearCache() {
+    if (confirm('Are you sure you want to clear the cache? This may temporarily slow down the site.')) {
+        fetch('/admin/clear-cache', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Cache cleared!', 'success');
+            } else {
+                showNotification('Failed to clear cache', 'error');
+            }
+        });
+    }
+}
+
+// Reset settings
+function resetSettings() {
+    if (confirm('Reset all settings to default values? This action cannot be undone.')) {
+        fetch('/admin/settings/reset', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Settings reset to defaults!', 'success');
+                location.reload();
+            } else {
+                showNotification('Failed to reset settings', 'error');
+            }
+        });
+    }
+}
+
+// Delete all data (danger zone)
+function deleteAllData() {
+    const confirmText = prompt('Type "DELETE ALL DATA" to confirm this irreversible action:');
+    if (confirmText === 'DELETE ALL DATA') {
+        if (confirm('⚠️ ARE YOU ABSOLUTELY SURE? This will delete ALL products, accounts, and orders. This cannot be undone!')) {
+            fetch('/admin/delete-all-data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('All data has been deleted', 'warning');
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    showNotification('Failed to delete data', 'error');
+                }
+            });
+        }
+    } else if (confirmText) {
+        showNotification('Confirmation text did not match', 'error');
+    }
+}
+
+// Color picker preview
+document.getElementById('primary_color')?.addEventListener('input', function() {
+    document.getElementById('primary_color_value').textContent = this.value;
+});
+document.getElementById('accent_color')?.addEventListener('input', function() {
+    document.getElementById('accent_color_value').textContent = this.value;
+});
+
+// Show notification
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        <span>${message}</span>
+    `;
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 3000);
+}
+</script>
+{% endblock %}

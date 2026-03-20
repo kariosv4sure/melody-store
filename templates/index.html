@@ -1,0 +1,488 @@
+{% extends "base.html" %}
+
+{% block title %}Melody Store - Premium Digital Accounts{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <h1 class="hero-title">
+            Premium Digital Accounts<br>
+            <span class="hero-highlight">Instant Delivery</span>
+        </h1>
+        <p class="hero-subtitle">
+            Buy verified social media accounts, VPN access, and digital services<br>
+            with instant delivery and 24/7 support.
+        </p>
+        <div class="hero-actions">
+            <a href="#categories" class="btn btn-primary">
+                Browse Categories <i class="fas fa-arrow-right"></i>
+            </a>
+            <a href="{{ url_for('my_orders') }}" class="btn btn-outline">
+                Track Order <i class="fas fa-search"></i>
+            </a>
+        </div>
+    </div>
+    <div class="hero-stats">
+        <div class="stat-item">
+            <span class="stat-number">5000+</span>
+            <span class="stat-label">Happy Customers</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number">Instant</span>
+            <span class="stat-label">Delivery</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number">24/7</span>
+            <span class="stat-label">Support</span>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="categories" id="categories">
+    <div class="section-header">
+        <h2 class="section-title">Shop by Category</h2>
+        <p class="section-subtitle">Browse our extensive collection of digital accounts</p>
+    </div>
+
+    <div class="category-grid">
+        <!-- Facebook -->
+        <a href="{{ url_for('category_view', slug='facebook') }}" class="category-card">
+            <div class="category-icon-wrapper">
+                <img src="{{ url_for('static', filename='logos/facebook-logo.png') }}"
+                     alt="Facebook" class="category-icon">
+            </div>
+            <h3 class="category-name">Facebook</h3>
+            <p class="category-count">12+ products</p>
+            <span class="category-link">
+                Shop Now <i class="fas fa-arrow-right"></i>
+            </span>
+        </a>
+
+        <!-- Instagram -->
+        <a href="{{ url_for('category_view', slug='instagram') }}" class="category-card">
+            <div class="category-icon-wrapper">
+                <img src="{{ url_for('static', filename='logos/instagram-logo.png') }}"
+                     alt="Instagram" class="category-icon">
+            </div>
+            <h3 class="category-name">Instagram</h3>
+            <p class="category-count">8+ products</p>
+            <span class="category-link">
+                Shop Now <i class="fas fa-arrow-right"></i>
+            </span>
+        </a>
+
+        <!-- TikTok -->
+        <a href="{{ url_for('category_view', slug='tiktok') }}" class="category-card">
+            <div class="category-icon-wrapper">
+                <img src="{{ url_for('static', filename='logos/tiktok-logo.png') }}"
+                     alt="TikTok" class="category-icon">
+            </div>
+            <h3 class="category-name">TikTok</h3>
+            <p class="category-count">6+ products</p>
+            <span class="category-link">
+                Shop Now <i class="fas fa-arrow-right"></i>
+            </span>
+        </a>
+
+        <!-- Twitter -->
+        <a href="{{ url_for('category_view', slug='twitter') }}" class="category-card">
+            <div class="category-icon-wrapper">
+                <img src="{{ url_for('static', filename='logos/twitter-logo.png') }}"
+                     alt="Twitter" class="category-icon">
+            </div>
+            <h3 class="category-name">Twitter (X)</h3>
+            <p class="category-count">10+ products</p>
+            <span class="category-link">
+                Shop Now <i class="fas fa-arrow-right"></i>
+            </span>
+        </a>
+
+        <!-- VPN -->
+        <a href="{{ url_for('category_view', slug='vpn') }}" class="category-card">
+            <div class="category-icon-wrapper">
+                <img src="{{ url_for('static', filename='logos/vpn-logo.png') }}"
+                     alt="VPN" class="category-icon">
+            </div>
+            <h3 class="category-name">VPN Services</h3>
+            <p class="category-count">5+ products</p>
+            <span class="category-link">
+                Shop Now <i class="fas fa-arrow-right"></i>
+            </span>
+        </a>
+
+        <!-- Texting Apps -->
+        <a href="{{ url_for('category_view', slug='texting') }}" class="category-card">
+            <div class="category-icon-wrapper">
+                <img src="{{ url_for('static', filename='logos/texting-logo.png') }}"
+                     alt="Texting Apps" class="category-icon">
+            </div>
+            <h3 class="category-name">Texting Apps</h3>
+            <p class="category-count">4+ products</p>
+            <span class="category-link">
+                Shop Now <i class="fas fa-arrow-right"></i>
+            </span>
+        </a>
+
+        <!-- Dating Logs -->
+        <a href="{{ url_for('category_view', slug='dating') }}" class="category-card">
+            <div class="category-icon-wrapper">
+                <img src="{{ url_for('static', filename='logos/dating-logo.png') }}"
+                     alt="Dating Logs" class="category-icon">
+            </div>
+            <h3 class="category-name">Dating Logs</h3>
+            <p class="category-count">7+ products</p>
+            <span class="category-link">
+                Shop Now <i class="fas fa-arrow-right"></i>
+            </span>
+        </a>
+
+        <!-- Other Logs -->
+        <a href="{{ url_for('category_view', slug='other') }}" class="category-card">
+            <div class="category-icon-wrapper">
+                <img src="{{ url_for('static', filename='logos/other-logo.png') }}"
+                     alt="Other Logs" class="category-icon">
+            </div>
+            <h3 class="category-name">Other Logs</h3>
+            <p class="category-count">15+ products</p>
+            <span class="category-link">
+                Shop Now <i class="fas fa-arrow-right"></i>
+            </span>
+        </a>
+    </div>
+</section>
+
+<!-- Featured Products Section -->
+<section class="featured-products">
+    <div class="section-header">
+        <h2 class="section-title">Featured Products</h2>
+        <p class="section-subtitle">Most popular digital accounts this week</p>
+    </div>
+
+    <div class="products-grid">
+        <!-- TikTok Canada -->
+        <div class="product-card">
+            <div class="product-image">
+                <img src="{{ url_for('static', filename='logos/tiktok-logo.png') }}"
+                     alt="TikTok Canada">
+                <span class="product-badge">Popular</span>
+            </div>
+            <div class="product-content">
+                <h3 class="product-title">Canada TikTok Account</h3>
+                <p class="product-description">
+                    100+ followers, 5+ posts, with 2FA + Mail
+                </p>
+                <div class="product-price">
+                    <span class="price">₦3,500</span>
+                </div>
+                <div class="product-meta">
+                    <span class="stock in-stock">
+                        <i class="fas fa-check-circle"></i> In Stock
+                    </span>
+                    <span class="rating">
+                        <i class="fas fa-star"></i> 4.8
+                    </span>
+                </div>
+                <div class="product-actions">
+                    <a href="{{ url_for('product_view', product_id=1) }}" class="btn-view">
+                        View Details <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <button class="btn-add-cart" onclick="addToCart(1)">
+                        <i class="fas fa-shopping-cart"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instagram USA -->
+        <div class="product-card">
+            <div class="product-image">
+                <img src="{{ url_for('static', filename='logos/instagram-logo.png') }}"
+                     alt="Instagram USA">
+                <span class="product-badge featured">Featured</span>
+            </div>
+            <div class="product-content">
+                <h3 class="product-title">USA Instagram Account</h3>
+                <p class="product-description">
+                    2000+ followers, 2010-2018, active account
+                </p>
+                <div class="product-price">
+                    <span class="price">₦13,000</span>
+                </div>
+                <div class="product-meta">
+                    <span class="stock in-stock">
+                        <i class="fas fa-check-circle"></i> In Stock
+                    </span>
+                    <span class="rating">
+                        <i class="fas fa-star"></i> 4.9
+                    </span>
+                </div>
+                <div class="product-actions">
+                    <a href="{{ url_for('product_view', product_id=2) }}" class="btn-view">
+                        View Details <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <button class="btn-add-cart" onclick="addToCart(2)">
+                        <i class="fas fa-shopping-cart"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Twitter 200 followers -->
+        <div class="product-card">
+            <div class="product-image">
+                <img src="{{ url_for('static', filename='logos/twitter-logo.png') }}"
+                     alt="Twitter Account">
+            </div>
+            <div class="product-content">
+                <h3 class="product-title">Twitter Account</h3>
+                <p class="product-description">
+                    200+ followers, 2008-2018, aged account
+                </p>
+                <div class="product-price">
+                    <span class="price">₦7,000</span>
+                </div>
+                <div class="product-meta">
+                    <span class="stock low-stock">
+                        <i class="fas fa-exclamation-circle"></i> Only 2 left
+                    </span>
+                    <span class="rating">
+                        <i class="fas fa-star"></i> 4.7
+                    </span>
+                </div>
+                <div class="product-actions">
+                    <a href="{{ url_for('product_view', product_id=3) }}" class="btn-view">
+                        View Details <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <button class="btn-add-cart" onclick="addToCart(3)">
+                        <i class="fas fa-shopping-cart"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- NordVPN -->
+        <div class="product-card">
+            <div class="product-image">
+                <img src="{{ url_for('static', filename='logos/vpn-logo.png') }}"
+                     alt="NordVPN">
+                <span class="product-badge">Premium</span>
+            </div>
+            <div class="product-content">
+                <h3 class="product-title">NordVPN Account</h3>
+                <p class="product-description">
+                    Premium VPN, unlimited bandwidth, 30+ countries
+                </p>
+                <div class="product-price">
+                    <span class="price">₦4,000</span>
+                </div>
+                <div class="product-meta">
+                    <span class="stock in-stock">
+                        <i class="fas fa-check-circle"></i> In Stock
+                    </span>
+                    <span class="rating">
+                        <i class="fas fa-star"></i> 4.6
+                    </span>
+                </div>
+                <div class="product-actions">
+                    <a href="{{ url_for('product_view', product_id=4) }}" class="btn-view">
+                        View Details <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <button class="btn-add-cart" onclick="addToCart(4)">
+                        <i class="fas fa-shopping-cart"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Google Voice -->
+        <div class="product-card">
+            <div class="product-image">
+                <img src="{{ url_for('static', filename='logos/texting-logo.png') }}"
+                     alt="Google Voice">
+            </div>
+            <div class="product-content">
+                <h3 class="product-title">Google Voice Number</h3>
+                <p class="product-description">
+                    USA number, verified, works with all services
+                </p>
+                <div class="product-price">
+                    <span class="price">₦6,500</span>
+                </div>
+                <div class="product-meta">
+                    <span class="stock in-stock">
+                        <i class="fas fa-check-circle"></i> In Stock
+                    </span>
+                    <span class="rating">
+                        <i class="fas fa-star"></i> 4.9
+                    </span>
+                </div>
+                <div class="product-actions">
+                    <a href="{{ url_for('product_view', product_id=5) }}" class="btn-view">
+                        View Details <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <button class="btn-add-cart" onclick="addToCart(5)">
+                        <i class="fas fa-shopping-cart"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- USA Facebook -->
+        <div class="product-card">
+            <div class="product-image">
+                <img src="{{ url_for('static', filename='logos/facebook-logo.png') }}"
+                     alt="USA Facebook">
+            </div>
+            <div class="product-content">
+                <h3 class="product-title">USA Facebook Account</h3>
+                <p class="product-description">
+                    30+ friends, active, can send messages
+                </p>
+                <div class="product-price">
+                    <span class="price">₦5,000</span>
+                </div>
+                <div class="product-meta">
+                    <span class="stock in-stock">
+                        <i class="fas fa-check-circle"></i> In Stock
+                    </span>
+                    <span class="rating">
+                        <i class="fas fa-star"></i> 4.5
+                    </span>
+                </div>
+                <div class="product-actions">
+                    <a href="{{ url_for('product_view', product_id=6) }}" class="btn-view">
+                        View Details <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <button class="btn-add-cart" onclick="addToCart(6)">
+                        <i class="fas fa-shopping-cart"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-footer">
+        <a href="{{ url_for('category_view', slug='all') }}" class="btn-view-all">
+            View All Products <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features">
+    <div class="features-grid">
+        <div class="feature-item">
+            <div class="feature-icon">
+                <i class="fas fa-bolt"></i>
+            </div>
+            <h4>Instant Delivery</h4>
+            <p>Get your account details immediately after payment</p>
+        </div>
+
+        <div class="feature-item">
+            <div class="feature-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h4>Secure Payments</h4>
+            <p>Pay securely with Paystack, Visa, Mastercard</p>
+        </div>
+
+        <div class="feature-item">
+            <div class="feature-icon">
+                <i class="fas fa-headset"></i>
+            </div>
+            <h4>24/7 Support</h4>
+            <p>We're here to help anytime you need assistance</p>
+        </div>
+
+        <div class="feature-item">
+            <div class="feature-icon">
+                <i class="fas fa-undo-alt"></i>
+            </div>
+            <h4>Warranty</h4>
+            <p>7-day replacement warranty on all accounts</p>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="newsletter">
+    <div class="newsletter-content">
+        <h3>Get Updates & Offers</h3>
+        <p>Subscribe to receive notifications about new products and special promotions</p>
+        <form class="newsletter-form" method="POST" action="{{ url_for('subscribe') }}">
+            <div class="input-group">
+                <input type="email" name="email" placeholder="Your email address" required>
+                <button type="submit" class="btn btn-primary">Subscribe</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function addToCart(productId) {
+    // Get existing cart from localStorage
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    // Check if product already in cart
+    const existingItem = cart.find(item => item.id === productId);
+
+    if (existingItem) {
+        existingItem.quantity = (existingItem.quantity || 1) + 1;
+    } else {
+        cart.push({
+            id: productId,
+            quantity: 1,
+            added_at: new Date().toISOString()
+        });
+    }
+
+    // Save back to localStorage
+    localStorage.setItem('cart', JSON.stringify(cart));
+
+    // Update cart count
+    if (typeof updateCartCount === 'function') {
+        updateCartCount();
+    }
+
+    // Show success message
+    showNotification('Product added to cart!', 'success');
+}
+
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+        <span>${message}</span>
+    `;
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Update cart count function (if not already defined in base.html)
+function updateCartCount() {
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const cartBadge = document.getElementById('cart-count');
+    if (cartBadge) {
+        cartBadge.textContent = cart.length;
+    }
+}
+
+// Initialize cart count on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateCartCount();
+});
+</script>
+{% endblock %}

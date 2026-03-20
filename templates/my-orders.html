@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}My Orders - Melody Store{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="page-header-content">
+        <h1 class="page-title">My Orders</h1>
+        <p class="page-subtitle">Track and view your order history</p>
+    </div>
+</section>
+
+<div class="orders-container">
+    <!-- Email Form Card -->
+    <div class="email-card">
+        <div class="email-card-header">
+            <div class="header-icon">
+                <i class="fas fa-envelope-open-text"></i>
+            </div>
+            <h2>Enter Your Email Address</h2>
+            <p>We'll send you a link to view your orders, or you can view them immediately.</p>
+        </div>
+        
+        <div class="email-card-body">
+            <form method="POST" action="{{ url_for('my_orders') }}" id="orders-email-form" class="email-form">
+                <div class="form-group">
+                    <div class="input-with-icon">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" 
+                               name="email" 
+                               id="email" 
+                               class="form-control" 
+                               placeholder="your@email.com" 
+                               required
+                               pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                               title="Please enter a valid email address">
+                    </div>
+                    <div class="form-hint">
+                        <i class="fas fa-info-circle"></i>
+                        <span>We'll show all orders associated with this email</span>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-view-orders" id="submit-btn">
+                        <span>View My Orders</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Recent Orders Preview (if any) -->
+        {% if recent_orders %}
+        <div class="recent-preview">
+            <div class="preview-header">
+                <h3>Recent Orders</h3>
+                <span class="preview-note">Enter email to see all</span>
+            </div>
+            <div class="preview-list">
+                {% for order in recent_orders[:3] %}
+                <div class="preview-item">
+                    <div class="preview-info">
+                        <span class="order-number">#{{ order.order_number }}</span>
+                        <span class="order-product">{{ order.product_name }}</span>
+                    </div>
+                    <span class="order-date">{{ order.created_at.strftime('%d %b %Y') }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- How It Works Section -->
+    <div class="how-it-works">
+        <h2 class="section-title">How It Works</h2>
+        
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <div class="step-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <h3>Enter Email</h3>
+                <p>Provide the email you used when placing your order</p>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <div class="step-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3>View Orders</h3>
+                <p>See all your orders with status and details</p>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <div class="step-icon">
+                    <i class="fas fa-download"></i>
+                </div>
+                <h3>Access Accounts</h3>
+                <p>View account details for completed orders</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FAQ Section -->
+    <div class="orders-faq">
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        
+        <div class="faq-grid">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <i class="fas fa-question-circle"></i>
+                    <h4>What email should I use?</h4>
+                </div>
+                <p>Use the same email address you provided during checkout. Your orders are linked to this email.</p>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <i class="fas fa-question-circle"></i>
+                    <h4>I didn't receive my order</h4>
+                </div>
+                <p>First, check your spam folder. If you still can't find it, use this page to view your orders and access your account details.</p>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <i class="fas fa-question-circle"></i>
+                    <h4>Can I view orders without email?</h4>
+                </div>
+                <p>For security reasons, you need to verify your email to view your orders. This ensures your account details remain private.</p>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <i class="fas fa-question-circle"></i>
+                    <h4>How long are orders stored?</h4>
+                </div>
+                <p>Your orders remain in our system indefinitely. You can always come back to view your purchased accounts.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Need Help Section -->
+    <div class="need-help">
+        <div class="help-content">
+            <div class="help-icon">
+                <i class="fas fa-headset"></i>
+            </div>
+            <div class="help-text">
+                <h3>Need Help Finding Your Orders?</h3>
+                <p>Our support team is available 24/7 to assist you</p>
+            </div>
+            <a href="#" class="btn-contact">
+                <i class="fas fa-comment"></i>
+                Contact Support
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('orders-email-form');
+    const emailInput = document.getElementById('email');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    // Auto-focus email input
+    emailInput.focus();
+    
+    // Real-time email validation
+    emailInput.addEventListener('input', function(e) {
+        const email = e.target.value.trim();
+        const isValid = validateEmail(email);
+        
+        if (email.length > 0) {
+            if (isValid) {
+                emailInput.classList.remove('error');
+                emailInput.classList.add('valid');
+                submitBtn.disabled = false;
+            } else {
+                emailInput.classList.remove('valid');
+                emailInput.classList.add('error');
+                submitBtn.disabled = true;
+            }
+        } else {
+            emailInput.classList.remove('valid', 'error');
+            submitBtn.disabled = true;
+        }
+    });
+    
+    // Form submission handling
+    form.addEventListener('submit', function(e) {
+        const email = emailInput.value.trim();
+        
+        if (!validateEmail(email)) {
+            e.preventDefault();
+            showNotification('Please enter a valid email address', 'error');
+            return;
+        }
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+            <span>Searching...</span>
+            <i class="fas fa-spinner fa-spin"></i>
+        `;
+    });
+    
+    // Email validation function
+    function validateEmail(email) {
+        const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return re.test(String(email).toLowerCase());
+    }
+    
+    // Check for email in URL parameters (for convenience)
+    const urlParams = new URLSearchParams(window.location.search);
+    const emailParam = urlParams.get('email');
+    if (emailParam) {
+        emailInput.value = emailParam;
+        emailInput.classList.add('valid');
+        submitBtn.disabled = false;
+    }
+    
+    // Load saved email from localStorage (optional convenience)
+    const savedEmail = localStorage.getItem('last_order_email');
+    if (savedEmail && !emailInput.value) {
+        emailInput.value = savedEmail;
+        emailInput.classList.add('valid');
+        submitBtn.disabled = false;
+    }
+    
+    // Notification function
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+            <span>${message}</span>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+    
+    // Add keyboard shortcut (Ctrl+Enter to submit)
+    emailInput.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            if (!submitBtn.disabled) {
+                form.submit();
+            }
+        }
+    });
+    
+    // Remember email checkbox (optional)
+    const rememberEmail = document.createElement('div');
+    rememberEmail.className = 'remember-email';
+    rememberEmail.innerHTML = `
+        <label class="checkbox-label">
+            <input type="checkbox" id="remember-email" checked>
+            <span>Remember my email on this device</span>
+        </label>
+    `;
+    
+    // Insert after form group
+    const formGroup = document.querySelector('.form-group');
+    if (formGroup) {
+        formGroup.appendChild(rememberEmail);
+    }
+    
+    // Handle remember email
+    const rememberCheckbox = document.getElementById('remember-email');
+    if (rememberCheckbox) {
+        rememberCheckbox.addEventListener('change', function(e) {
+            if (!e.target.checked) {
+                localStorage.removeItem('last_order_email');
+            }
+        });
+    }
+    
+    // Save email when form submits
+    form.addEventListener('submit', function() {
+        if (rememberCheckbox && rememberCheckbox.checked) {
+            localStorage.setItem('last_order_email', emailInput.value.trim());
+        }
+    });
+    
+    // Add smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+});
+
+// Add some animations on scroll
+window.addEventListener('scroll', function() {
+    const elements = document.querySelectorAll('.step-card, .faq-item');
+    
+    elements.forEach(element => {
+        const position = element.getBoundingClientRect();
+        
+        // If element is in viewport
+        if (position.top < window.innerHeight - 100) {
+            element.classList.add('visible');
+        }
+    });
+});
+</script>
+{% endblock %}

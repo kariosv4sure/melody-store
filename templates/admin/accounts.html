@@ -1,0 +1,312 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Manage Accounts - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="accounts-management">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Accounts</h1>
+            <p class="page-subtitle">Manage customer accounts and inventory</p>
+        </div>
+        <div class="header-actions">
+            <a href="{{ url_for('admin_account_add') }}" class="btn-primary">
+                <i class="fas fa-plus"></i> Add Single Account
+            </a>
+            <a href="{{ url_for('admin_accounts_upload') }}" class="btn-secondary">
+                <i class="fas fa-upload"></i> Bulk Upload
+            </a>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="filters-bar">
+        <div class="filter-group">
+            <label>Product:</label>
+            <select id="productFilter" onchange="filterAccounts()">
+                <option value="all">All Products</option>
+                {% for product in products %}
+                <option value="{{ product.id }}" {% if current_product == product.id %}selected{% endif %}>
+                    {{ product.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label>Status:</label>
+            <select id="statusFilter" onchange="filterAccounts()">
+                <option value="all" {% if current_show == 'all' %}selected{% endif %}>All Accounts</option>
+                <option value="unsold" {% if current_show == 'unsold' %}selected{% endif %}>Available</option>
+                <option value="sold" {% if current_show == 'sold' %}selected{% endif %}>Sold</option>
+            </select>
+        </div>
+        
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search by email or ID..." onkeyup="filterAccounts()">
+        </div>
+    </div>
+    
+    <!-- Stats Summary -->
+    <div class="stats-summary">
+        <div class="stat-badge">
+            <i class="fas fa-database"></i>
+            <span>Total: <strong>{{ accounts|length }}</strong></span>
+        </div>
+        <div class="stat-badge success">
+            <i class="fas fa-check-circle"></i>
+            <span>Available: <strong>{{ accounts|selectattr('sold', 'equalto', false)|list|length }}</strong></span>
+        </div>
+        <div class="stat-badge warning">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Sold: <strong>{{ accounts|selectattr('sold')|list|length }}</strong></span>
+        </div>
+    </div>
+    
+    <!-- Accounts Table -->
+    <div class="table-responsive">
+        <table class="admin-table accounts-table" id="accountsTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Email / Username</th>
+                    <th>Password</th>
+                    <th>2FA / Backup</th>
+                    <th>Product</th>
+                    <th>Status</th>
+                    <th>Sold To</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for account in accounts %}
+                <tr data-product="{{ account.product_id }}" 
+                    data-status="{% if account.sold %}sold{% else %}unsold{% endif %}"
+                    data-email="{{ account.account_email|lower }}">
+                    <td>{{ account.id }}</td>
+                    <td class="email-cell">
+                        <i class="fas fa-envelope"></i>
+                        {{ account.account_email }}
+                    </td>
+                    <td class="password-cell">
+                        <span class="password-dots">••••••••</span>
+                        <span class="password-text" style="display: none;">{{ account.account_password }}</span>
+                        <button class="toggle-password" onclick="togglePassword(this)">
+                            <i class="far fa-eye"></i>
+                        </button>
+                    </td>
+                    <td>
+                        {% if account.account_2fa %}
+                        <span class="badge-2fa" title="{{ account.account_2fa }}">
+                            <i class="fas fa-shield-alt"></i> Available
+                        </span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="product-badge">
+                            {{ account.product_ref.name if account.product_ref else 'Unknown' }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if account.sold %}
+                        <span class="status-badge status-sold">
+                            <i class="fas fa-check-circle"></i> Sold
+                        </span>
+                        {% else %}
+                        <span class="status-badge status-available">
+                            <i class="fas fa-circle"></i> Available
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if account.sold %}
+                        <div class="sold-info">
+                            <strong>{{ account.sold_to_name or 'N/A' }}</strong>
+                            <br>
+                            <small>{{ account.sold_email or 'N/A' }}</small>
+                        </div>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="actions">
+                        {% if not account.sold %}
+                        <a href="{{ url_for('admin_account_edit', account_id=account.id) }}" class="btn-icon edit" title="Edit Account">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button onclick="deleteAccount({{ account.id }}, '{{ account.account_email }}')" class="btn-icon delete" title="Delete Account">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        {% else %}
+                        <span class="text-muted">Locked</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center">
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>No accounts found</p>
+                            <a href="{{ url_for('admin_accounts_upload') }}" class="btn-primary">Upload Accounts</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Bulk Actions -->
+    {% if accounts|length > 0 %}
+    <div class="bulk-actions">
+        <button class="btn-secondary" onclick="exportAccounts()">
+            <i class="fas fa-download"></i> Export to CSV
+        </button>
+        <button class="btn-danger" onclick="deleteAllUn sold()">
+            <i class="fas fa-trash"></i> Delete All Unused Accounts
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal" id="deleteModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Delete Account</h3>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete account for <strong id="deleteAccountEmail"></strong>?</p>
+            <p class="text-warning">This action cannot be undone. The account will be permanently removed.</p>
+        </div>
+        <div class="modal-footer">
+            <form id="deleteForm" method="POST">
+                <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn-danger">Delete Account</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let deleteAccountId = null;
+
+function filterAccounts() {
+    const productFilter = document.getElementById('productFilter').value;
+    const statusFilter = document.getElementById('statusFilter').value;
+    const searchValue = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#accountsTable tbody tr');
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        if (row.cells.length === 1) return;
+        
+        const productId = row.getAttribute('data-product');
+        const status = row.getAttribute('data-status');
+        const email = row.getAttribute('data-email');
+        
+        let matchesProduct = productFilter === 'all' || productId === productFilter;
+        let matchesStatus = statusFilter === 'all' || status === statusFilter;
+        let matchesSearch = email.includes(searchValue);
+        
+        if (matchesProduct && matchesStatus && matchesSearch) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Update stats display
+    document.querySelectorAll('.stat-badge span strong').forEach(el => {
+        if (el.parentElement.innerText.includes('Available')) {
+            el.innerText = document.querySelectorAll('tr[data-status="unsold"]:not([style*="display: none"])').length;
+        }
+    });
+}
+
+function togglePassword(btn) {
+    const row = btn.closest('tr');
+    const dots = row.querySelector('.password-dots');
+    const text = row.querySelector('.password-text');
+    const icon = btn.querySelector('i');
+    
+    if (dots.style.display === 'none') {
+        dots.style.display = 'inline';
+        text.style.display = 'none';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    } else {
+        dots.style.display = 'none';
+        text.style.display = 'inline';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    }
+}
+
+function deleteAccount(accountId, accountEmail) {
+    deleteAccountId = accountId;
+    const modal = document.getElementById('deleteModal');
+    const emailSpan = document.getElementById('deleteAccountEmail');
+    const deleteForm = document.getElementById('deleteForm');
+    
+    emailSpan.textContent = accountEmail;
+    deleteForm.action = `/admin/account/delete/${accountId}`;
+    modal.classList.add('show');
+}
+
+function closeModal() {
+    const modal = document.getElementById('deleteModal');
+    modal.classList.remove('show');
+}
+
+function exportAccounts() {
+    const productFilter = document.getElementById('productFilter').value;
+    const statusFilter = document.getElementById('statusFilter').value;
+    window.location.href = `/admin/accounts/export?product=${productFilter}&status=${statusFilter}`;
+}
+
+function deleteAllUnsold() {
+    if (confirm('⚠️ Delete ALL unsold accounts? This action cannot be undone!')) {
+        fetch('/admin/accounts/delete-unsold', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('All unsold accounts deleted!', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification('Failed to delete accounts', 'error');
+            }
+        });
+    }
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('deleteModal');
+    if (event.target === modal) {
+        closeModal();
+    }
+});
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i><span>${message}</span>`;
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 3000);
+}
+</script>
+{% endblock %}

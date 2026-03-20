@@ -1,0 +1,340 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Order #{{ order.order_number }} - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="order-detail-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Order Details</h1>
+            <p class="page-subtitle">Order #{{ order.order_number }}</p>
+        </div>
+        <div class="header-actions">
+            <a href="{{ url_for('admin_orders') }}" class="btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Orders
+            </a>
+            <button onclick="window.print()" class="btn-primary">
+                <i class="fas fa-print"></i> Print Order
+            </button>
+        </div>
+    </div>
+    
+    <div class="order-detail-grid">
+        <!-- Left Column - Order Info -->
+        <div class="order-info-section">
+            <div class="info-card">
+                <h3><i class="fas fa-receipt"></i> Order Information</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Order Number</label>
+                        <span class="order-number">{{ order.order_number }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Order Date</label>
+                        <span>{{ order.created_at.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Payment Reference</label>
+                        <span class="payment-ref">{{ order.payment_ref }}</span>
+                        <button class="copy-btn" onclick="copyToClipboard('{{ order.payment_ref }}')">
+                            <i class="far fa-copy"></i>
+                        </button>
+                    </div>
+                    <div class="info-item">
+                        <label>Status</label>
+                        <span class="order-status status-delivered">
+                            <i class="fas fa-check-circle"></i> Delivered
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <h3><i class="fas fa-user"></i> Customer Information</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Full Name</label>
+                        <span>{{ order.customer_name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Email Address</label>
+                        <span>{{ order.customer_email }}</span>
+                        <button class="copy-btn" onclick="copyToClipboard('{{ order.customer_email }}')">
+                            <i class="far fa-copy"></i>
+                        </button>
+                        <a href="mailto:{{ order.customer_email }}" class="email-link">
+                            <i class="fas fa-envelope"></i> Send Email
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <h3><i class="fas fa-box"></i> Product Information</h3>
+                <div class="product-detail">
+                    <div class="product-image-small">
+                        <img src="{{ get_product_image(order.product) if order.product else url_for('static', filename='logos/default-logo.png') }}" 
+                             alt="{{ order.product_name }}">
+                    </div>
+                    <div class="product-detail-info">
+                        <h4>{{ order.product_name }}</h4>
+                        <p class="product-category">
+                            <i class="fas fa-tag"></i> {{ order.product_category or 'General' }}
+                        </p>
+                        <p class="product-price">{{ format_currency(order.amount) }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column - Account Credentials -->
+        <div class="account-section">
+            <div class="credentials-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-key"></i> Account Credentials</h3>
+                    <div class="card-actions">
+                        <button onclick="copyAllCredentials()" class="btn-sm">
+                            <i class="fas fa-copy"></i> Copy All
+                        </button>
+                        <button onclick="resendEmail()" class="btn-sm">
+                            <i class="fas fa-envelope"></i> Resend Email
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="credentials-list">
+                    <div class="credential-item">
+                        <div class="credential-label">
+                            <i class="fas fa-envelope"></i> Email / Username
+                        </div>
+                        <div class="credential-value" id="cred-email">
+                            {{ order.account_email or 'N/A' }}
+                        </div>
+                        {% if order.account_email %}
+                        <button class="copy-cred-btn" onclick="copyToClipboard('{{ order.account_email }}', 'cred-email')">
+                            <i class="far fa-copy"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="credential-item">
+                        <div class="credential-label">
+                            <i class="fas fa-lock"></i> Password
+                        </div>
+                        <div class="credential-value password-value" id="cred-password">
+                            <span class="password-dots">••••••••••••</span>
+                            <span class="password-text" style="display: none;">{{ order.account_password or 'N/A' }}</span>
+                        </div>
+                        <div class="credential-actions">
+                            <button class="copy-cred-btn" onclick="togglePassword()">
+                                <i class="far fa-eye" id="togglePasswordIcon"></i>
+                            </button>
+                            {% if order.account_password %}
+                            <button class="copy-cred-btn" onclick="copyToClipboard('{{ order.account_password }}', 'cred-password')">
+                                <i class="far fa-copy"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if order.account_2fa %}
+                    <div class="credential-item">
+                        <div class="credential-label">
+                            <i class="fas fa-shield-alt"></i> 2FA / Backup Code
+                        </div>
+                        <div class="credential-value" id="cred-2fa">
+                            {{ order.account_2fa }}
+                        </div>
+                        <button class="copy-cred-btn" onclick="copyToClipboard('{{ order.account_2fa }}', 'cred-2fa')">
+                            <i class="far fa-copy"></i>
+                        </button>
+                    </div>
+                    {% endif %}
+                    
+                    {% if order.account_notes %}
+                    <div class="credential-item full-width">
+                        <div class="credential-label">
+                            <i class="fas fa-sticky-note"></i> Additional Notes
+                        </div>
+                        <div class="credential-value note-text">
+                            {{ order.account_notes }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="warning-box">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <strong>Important:</strong> These credentials have already been sent to the customer. 
+                        Use the "Resend Email" button if the customer needs them again.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="timeline-card">
+                <h3><i class="fas fa-history"></i> Order Timeline</h3>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Order Placed</h4>
+                            <p>{{ order.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-icon success">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Payment Confirmed</h4>
+                            <p>{{ order.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-icon success">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Credentials Sent</h4>
+                            <p>{{ order.delivered_at.strftime('%B %d, %Y at %I:%M %p') if order.delivered_at else order.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resend Email Modal -->
+<div class="modal" id="resendEmailModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Resend Account Credentials</h3>
+            <button class="modal-close" onclick="closeResendEmailModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Resend credentials to:</p>
+            <div class="customer-info-box">
+                <strong>{{ order.customer_name }}</strong>
+                <p>{{ order.customer_email }}</p>
+            </div>
+            <p class="text-muted">This will send a new email with the account details.</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-secondary" onclick="closeResendEmailModal()">Cancel</button>
+            <button type="button" class="btn-primary" onclick="sendResendEmail()">Send Email</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let passwordVisible = false;
+
+function togglePassword() {
+    const passwordDots = document.querySelector('.password-dots');
+    const passwordText = document.querySelector('.password-text');
+    const toggleIcon = document.getElementById('togglePasswordIcon');
+    
+    if (!passwordVisible) {
+        passwordDots.style.display = 'none';
+        passwordText.style.display = 'inline';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+        passwordVisible = true;
+    } else {
+        passwordDots.style.display = 'inline';
+        passwordText.style.display = 'none';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+        passwordVisible = false;
+    }
+}
+
+function copyToClipboard(text, elementId = null) {
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = event.currentTarget;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i>';
+        setTimeout(() => {
+            btn.innerHTML = originalHtml;
+        }, 2000);
+        
+        if (elementId) {
+            const element = document.getElementById(elementId);
+            element.classList.add('copied');
+            setTimeout(() => {
+                element.classList.remove('copied');
+            }, 500);
+        }
+    });
+}
+
+function copyAllCredentials() {
+    let credentials = '';
+    credentials += `Email: ${document.getElementById('cred-email')?.innerText || 'N/A'}\n`;
+    credentials += `Password: ${document.querySelector('.password-text')?.innerText || 'N/A'}\n`;
+    if (document.getElementById('cred-2fa')) {
+        credentials += `2FA: ${document.getElementById('cred-2fa').innerText}\n`;
+    }
+    copyToClipboard(credentials);
+}
+
+function resendEmail() {
+    const modal = document.getElementById('resendEmailModal');
+    modal.classList.add('show');
+}
+
+function closeResendEmailModal() {
+    const modal = document.getElementById('resendEmailModal');
+    modal.classList.remove('show');
+}
+
+function sendResendEmail() {
+    fetch('{{ url_for("admin_order_resend", order_id=order.id) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Email resent successfully!');
+            closeResendEmailModal();
+        } else {
+            alert('Failed to resend email: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Error sending email');
+    });
+}
+
+// Close modals when clicking outside
+document.addEventListener('click', function(event) {
+    const resendModal = document.getElementById('resendEmailModal');
+    if (event.target === resendModal) {
+        closeResendEmailModal();
+    }
+});
+
+// Add copy animation style
+const style = document.createElement('style');
+style.textContent = `
+    .copied {
+        animation: copyFlash 0.3s ease;
+    }
+    @keyframes copyFlash {
+        0% { background-color: transparent; }
+        50% { background-color: rgba(37, 99, 235, 0.2); }
+        100% { background-color: transparent; }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

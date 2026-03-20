@@ -1,0 +1,669 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - Melody Store{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+    <div class="breadcrumb-container">
+        <a href="{{ url_for('index') }}" class="breadcrumb-item">
+            <i class="fas fa-home"></i> Home
+        </a>
+        <i class="fas fa-chevron-right breadcrumb-separator"></i>
+        <a href="{{ url_for('category_view', slug=product.category_ref.slug) }}" class="breadcrumb-item">
+            {{ product.category_ref.name }}
+        </a>
+        <i class="fas fa-chevron-right breadcrumb-separator"></i>
+        <span class="breadcrumb-item active">{{ product.name }}</span>
+    </div>
+</div>
+
+<!-- Product Main Section -->
+<div class="product-container">
+    <div class="product-grid">
+        <!-- Product Image Gallery -->
+        <div class="product-gallery">
+            <div class="main-image">
+                <img src="{{ get_product_image(product) }}" 
+                     alt="{{ product.name }}"
+                     id="main-product-image"
+                     onerror="this.src='{{ url_for('static', filename='logos/default-logo.png') }}'">
+            </div>
+            
+            <!-- Stock Status Badge -->
+            <div class="stock-badge {{ 'in-stock' if available_count > 0 else 'out-of-stock' }}">
+                {% if available_count > 5 %}
+                <i class="fas fa-check-circle"></i>
+                <span>In Stock ({{ available_count }} available)</span>
+                {% elif available_count > 0 %}
+                <i class="fas fa-exclamation-circle"></i>
+                <span>Low Stock - Only {{ available_count }} left!</span>
+                {% else %}
+                <i class="fas fa-times-circle"></i>
+                <span>Out of Stock</span>
+                {% endif %}
+            </div>
+            
+            <!-- Trust Badges -->
+            <div class="gallery-trust-badges">
+                <div class="trust-badge">
+                    <i class="fas fa-bolt"></i>
+                    <span>Instant Delivery</span>
+                </div>
+                <div class="trust-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>7-Day Warranty</span>
+                </div>
+                <div class="trust-badge">
+                    <i class="fas fa-headset"></i>
+                    <span>24/7 Support</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Product Information -->
+        <div class="product-info">
+            <div class="product-header">
+                <h1 class="product-title">{{ product.name }}</h1>
+                
+                <div class="product-meta">
+                    <div class="product-category">
+                        <i class="fas fa-tag"></i>
+                        <span>{{ product.category_ref.name }}</span>
+                    </div>
+                    
+                    {% if product.country %}
+                    <div class="product-country">
+                        <i class="fas fa-globe"></i>
+                        <span>{{ product.country }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="product-rating">
+                        <i class="fas fa-star"></i>
+                        <span>4.8</span>
+                        <span class="rating-count">(127 reviews)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="product-price-section">
+                <div class="price-container">
+                    <span class="current-price">{{ format_currency(product.price) }}</span>
+                    {% if product.old_price %}
+                    <span class="old-price">{{ format_currency(product.old_price) }}</span>
+                    <span class="savings-badge">Save {{ ((product.old_price - product.price) / product.old_price * 100)|round }}%</span>
+                    {% endif %}
+                </div>
+                
+                <div class="price-notice">
+                    <i class="fas fa-info-circle"></i>
+                    <span>One-time payment, no subscription</span>
+                </div>
+            </div>
+            
+            <!-- Short Description -->
+            <div class="product-description">
+                <p>{{ product.description }}</p>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="product-actions">
+                {% if available_count > 0 %}
+                <a href="{{ url_for('checkout', product_id=product.id) }}" class="btn-buy-now">
+                    <i class="fas fa-bolt"></i>
+                    <span>Buy Now - Instant Delivery</span>
+                </a>
+                
+                <button class="btn-add-to-cart" onclick="addToCart({{ product.id }})">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Add to Cart</span>
+                </button>
+                {% else %}
+                <button class="btn-out-of-stock" disabled>
+                    <i class="fas fa-times-circle"></i>
+                    <span>Out of Stock</span>
+                </button>
+                
+                <button class="btn-notify" onclick="notifyMe({{ product.id }})">
+                    <i class="fas fa-bell"></i>
+                    <span>Notify When Available</span>
+                </button>
+                {% endif %}
+            </div>
+            
+            <!-- Payment Methods -->
+            <div class="payment-methods">
+                <span class="payment-label">Secure Payment:</span>
+                <div class="payment-icons">
+                    <i class="fab fa-cc-visa" title="Visa"></i>
+                    <i class="fab fa-cc-mastercard" title="Mastercard"></i>
+                    <i class="fab fa-cc-amex" title="American Express"></i>
+                    <img src="https://paystack.com/assets/img/logo.svg" alt="Paystack" class="paystack-logo">
+                </div>
+            </div>
+            
+            <!-- Key Features Preview -->
+            {% if product.features %}
+            <div class="key-features">
+                <h3>Key Features</h3>
+                <ul class="features-list">
+                    {% for feature in product.features.split('\n')[:4] %}
+                    {% if feature.strip() %}
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        <span>{{ feature.strip() }}</span>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                </ul>
+                {% if product.features.split('\n')|length > 4 %}
+                <button class="btn-show-more" onclick="scrollToFeatures()">
+                    See all features <i class="fas fa-arrow-down"></i>
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Product Details Tabs -->
+    <div class="product-tabs">
+        <div class="tabs-header">
+            <button class="tab-button active" onclick="openTab(event, 'features')">
+                <i class="fas fa-list"></i>
+                Features
+            </button>
+            <button class="tab-button" onclick="openTab(event, 'rules')">
+                <i class="fas fa-gavel"></i>
+                Rules & Guidelines
+            </button>
+            <button class="tab-button" onclick="openTab(event, 'reviews')">
+                <i class="fas fa-star"></i>
+                Reviews
+            </button>
+            <button class="tab-button" onclick="openTab(event, 'faq')">
+                <i class="fas fa-question-circle"></i>
+                FAQ
+            </button>
+        </div>
+        
+        <div class="tabs-content">
+            <!-- Features Tab -->
+            <div id="features" class="tab-pane active">
+                <div class="features-grid">
+                    {% if product.features %}
+                        {% for feature in product.features.split('\n') %}
+                            {% if feature.strip() %}
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <div class="feature-text">{{ feature.strip() }}</div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <p class="no-content">No features listed for this product.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Rules Tab -->
+            <div id="rules" class="tab-pane">
+                <div class="rules-content">
+                    {% if product.rules %}
+                        {% for rule in product.rules.split('\n') %}
+                            {% if rule.strip() %}
+                            <div class="rule-item">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <p>{{ rule.strip() }}</p>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="rule-item">
+                            <i class="fas fa-info-circle"></i>
+                            <p>Please read our general terms and conditions before purchasing.</p>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="warranty-note">
+                        <i class="fas fa-shield-alt"></i>
+                        <div>
+                            <strong>7-Day Warranty</strong>
+                            <p>If you experience any issues with your account within 7 days of purchase, contact us for a free replacement.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Reviews Tab -->
+            <div id="reviews" class="tab-pane">
+                <div class="reviews-summary">
+                    <div class="average-rating">
+                        <span class="big-rating">4.8</span>
+                        <div class="stars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <span class="total-reviews">Based on 127 reviews</span>
+                    </div>
+                    
+                    <div class="rating-bars">
+                        <div class="rating-bar-item">
+                            <span class="rating-label">5 stars</span>
+                            <div class="bar-container">
+                                <div class="bar-fill" style="width: 85%"></div>
+                            </div>
+                            <span class="rating-count">108</span>
+                        </div>
+                        <div class="rating-bar-item">
+                            <span class="rating-label">4 stars</span>
+                            <div class="bar-container">
+                                <div class="bar-fill" style="width: 10%"></div>
+                            </div>
+                            <span class="rating-count">13</span>
+                        </div>
+                        <div class="rating-bar-item">
+                            <span class="rating-label">3 stars</span>
+                            <div class="bar-container">
+                                <div class="bar-fill" style="width: 3%"></div>
+                            </div>
+                            <span class="rating-count">4</span>
+                        </div>
+                        <div class="rating-bar-item">
+                            <span class="rating-label">2 stars</span>
+                            <div class="bar-container">
+                                <div class="bar-fill" style="width: 1%"></div>
+                            </div>
+                            <span class="rating-count">1</span>
+                        </div>
+                        <div class="rating-bar-item">
+                            <span class="rating-label">1 star</span>
+                            <div class="bar-container">
+                                <div class="bar-fill" style="width: 1%"></div>
+                            </div>
+                            <span class="rating-count">1</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-write-review" onclick="openReviewModal()">
+                        <i class="fas fa-pen"></i>
+                        Write a Review
+                    </button>
+                </div>
+                
+                <!-- Sample Reviews -->
+                <div class="reviews-list">
+                    <div class="review-item">
+                        <div class="reviewer-info">
+                            <span class="reviewer-name">Michael O.</span>
+                            <span class="review-date">2 days ago</span>
+                        </div>
+                        <div class="review-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p class="review-text">Great account, exactly as described. Delivery was instant and the account is working perfectly.</p>
+                    </div>
+                    
+                    <div class="review-item">
+                        <div class="reviewer-info">
+                            <span class="reviewer-name">Sarah K.</span>
+                            <span class="review-date">1 week ago</span>
+                        </div>
+                        <div class="review-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <p class="review-text">Good quality account. Had a small issue but support resolved it quickly. Recommended!</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FAQ Tab -->
+            <div id="faq" class="tab-pane">
+                <div class="faq-list">
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <span>How do I receive the account after purchase?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Account details are displayed immediately on the success page after payment and also sent to your email address.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <span>Are these accounts verified?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Yes, all accounts are fully verified and tested before listing. You'll receive working login credentials.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <span>What if the account stops working?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>We offer a 7-day warranty on all accounts. If you experience any issues, contact our support team for a free replacement.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <span>Can I change the account details?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Yes, you can change the password and other details after receiving the account. We recommend doing this immediately for security.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Similar Products -->
+    {% if similar %}
+    <div class="similar-products">
+        <h2 class="section-title">You might also like</h2>
+        
+        <div class="similar-grid">
+            {% for similar_product in similar %}
+            <div class="similar-card">
+                <div class="similar-image">
+                    <img src="{{ get_product_image(similar_product) }}" 
+                         alt="{{ similar_product.name }}"
+                         onerror="this.src='{{ url_for('static', filename='logos/default-logo.png') }}'">
+                </div>
+                
+                <div class="similar-content">
+                    <h3 class="similar-name">{{ similar_product.name }}</h3>
+                    <p class="similar-price">{{ format_currency(similar_product.price) }}</p>
+                    <a href="{{ url_for('product_view', product_id=similar_product.id) }}" class="btn-view-similar">
+                        View Product <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Review Modal -->
+<div class="modal" id="review-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Write a Review</h3>
+            <button class="modal-close" onclick="closeReviewModal()">&times;</button>
+        </div>
+        
+        <div class="modal-body">
+            <form id="review-form">
+                <div class="form-group">
+                    <label>Your Rating</label>
+                    <div class="star-rating">
+                        <i class="far fa-star" data-rating="1"></i>
+                        <i class="far fa-star" data-rating="2"></i>
+                        <i class="far fa-star" data-rating="3"></i>
+                        <i class="far fa-star" data-rating="4"></i>
+                        <i class="far fa-star" data-rating="5"></i>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="review-name">Your Name</label>
+                    <input type="text" id="review-name" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="review-email">Email (not shown)</label>
+                    <input type="email" id="review-email" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="review-text">Your Review</label>
+                    <textarea id="review-text" class="form-control" rows="4" required></textarea>
+                </div>
+                
+                <button type="submit" class="btn-submit-review">Submit Review</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Tab functionality
+function openTab(event, tabName) {
+    // Hide all tab panes
+    const panes = document.getElementsByClassName('tab-pane');
+    for (let i = 0; i < panes.length; i++) {
+        panes[i].classList.remove('active');
+    }
+    
+    // Remove active class from all buttons
+    const buttons = document.getElementsByClassName('tab-button');
+    for (let i = 0; i < buttons.length; i++) {
+        buttons[i].classList.remove('active');
+    }
+    
+    // Show selected tab and mark button active
+    document.getElementById(tabName).classList.add('active');
+    event.currentTarget.classList.add('active');
+    
+    // Smooth scroll to tabs
+    document.querySelector('.product-tabs').scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+
+// FAQ toggle
+function toggleFaq(element) {
+    const answer = element.nextElementSibling;
+    const icon = element.querySelector('i');
+    
+    if (answer.style.maxHeight) {
+        answer.style.maxHeight = null;
+        icon.style.transform = 'rotate(0deg)';
+    } else {
+        answer.style.maxHeight = answer.scrollHeight + 'px';
+        icon.style.transform = 'rotate(180deg)';
+    }
+}
+
+// Scroll to features
+function scrollToFeatures() {
+    document.getElementById('features').scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+
+// Add to cart
+function addToCart(productId) {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    
+    const existingItem = cart.find(item => item.id === productId);
+    
+    if (existingItem) {
+        existingItem.quantity = (existingItem.quantity || 1) + 1;
+    } else {
+        cart.push({
+            id: productId,
+            quantity: 1,
+            added_at: new Date().toISOString()
+        });
+    }
+    
+    localStorage.setItem('cart', JSON.stringify(cart));
+    
+    // Update cart count in header
+    if (typeof updateCartCount === 'function') {
+        updateCartCount();
+    }
+    
+    showNotification('Product added to cart!', 'success');
+}
+
+// Notify me
+function notifyMe(productId) {
+    const email = prompt('Enter your email to get notified when this product is back in stock:');
+    
+    if (email && email.includes('@')) {
+        // Here you would typically send this to your backend
+        showNotification('We\'ll notify you when it\'s back in stock!', 'success');
+    } else if (email) {
+        showNotification('Please enter a valid email address', 'error');
+    }
+}
+
+// Review modal
+function openReviewModal() {
+    document.getElementById('review-modal').classList.add('show');
+}
+
+function closeReviewModal() {
+    document.getElementById('review-modal').classList.remove('show');
+}
+
+// Star rating
+document.addEventListener('DOMContentLoaded', function() {
+    const stars = document.querySelectorAll('.star-rating i');
+    
+    stars.forEach(star => {
+        star.addEventListener('mouseover', function() {
+            const rating = this.dataset.rating;
+            highlightStars(rating);
+        });
+        
+        star.addEventListener('mouseout', function() {
+            const currentRating = document.querySelector('.star-rating').dataset.selected || 0;
+            highlightStars(currentRating);
+        });
+        
+        star.addEventListener('click', function() {
+            const rating = this.dataset.rating;
+            document.querySelector('.star-rating').dataset.selected = rating;
+            highlightStars(rating);
+        });
+    });
+});
+
+function highlightStars(rating) {
+    const stars = document.querySelectorAll('.star-rating i');
+    
+    stars.forEach(star => {
+        const starRating = star.dataset.rating;
+        if (starRating <= rating) {
+            star.classList.remove('far');
+            star.classList.add('fas');
+        } else {
+            star.classList.remove('fas');
+            star.classList.add('far');
+        }
+    });
+}
+
+// Review form submission
+document.getElementById('review-form')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const rating = document.querySelector('.star-rating').dataset.selected;
+    const name = document.getElementById('review-name').value;
+    const review = document.getElementById('review-text').value;
+    
+    if (!rating) {
+        showNotification('Please select a rating', 'error');
+        return;
+    }
+    
+    // Here you would send to backend
+    showNotification('Thank you for your review!', 'success');
+    closeReviewModal();
+    this.reset();
+    highlightStars(0);
+});
+
+// Show notification
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        <span>${message}</span>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeReviewModal();
+    }
+});
+
+// Click outside modal to close
+document.getElementById('review-modal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeReviewModal();
+    }
+});
+
+// Initialize FAQ items
+document.querySelectorAll('.faq-answer').forEach(answer => {
+    answer.style.maxHeight = null;
+});
+
+// Stock checking
+function checkStock() {
+    fetch(`{{ url_for('api_check_stock', product_id=product.id) }}`)
+        .then(response => response.json())
+        .then(data => {
+            const stockBadge = document.querySelector('.stock-badge');
+            const buyButton = document.querySelector('.btn-buy-now');
+            
+            if (data.available === 0) {
+                if (stockBadge) {
+                    stockBadge.className = 'stock-badge out-of-stock';
+                    stockBadge.innerHTML = '<i class="fas fa-times-circle"></i><span>Out of Stock</span>';
+                }
+                if (buyButton) {
+                    buyButton.outerHTML = '<button class="btn-out-of-stock" disabled><i class="fas fa-times-circle"></i><span>Out of Stock</span></button>';
+                }
+            } else if (data.available < 5) {
+                if (stockBadge) {
+                    stockBadge.className = 'stock-badge in-stock';
+                    stockBadge.innerHTML = `<i class="fas fa-exclamation-circle"></i><span>Low Stock - Only ${data.available} left!</span>`;
+                }
+            }
+        });
+}
+
+// Check stock every 30 seconds
+setInterval(checkStock, 30000);
+</script>
+{% endblock %}

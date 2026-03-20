@@ -1,0 +1,219 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Manage Products - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="products-management">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Products</h1>
+            <p class="page-subtitle">Manage your product catalog</p>
+        </div>
+        <a href="{{ url_for('admin_product_add') }}" class="btn-primary">
+            <i class="fas fa-plus"></i> Add New Product
+        </a>
+    </div>
+    
+    <!-- Search and Filter -->
+    <div class="search-filter">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search products by name..." onkeyup="filterTable()">
+        </div>
+        <div class="filter-group">
+            <label>Status:</label>
+            <select id="statusFilter" onchange="filterTable()">
+                <option value="all">All Products</option>
+                <option value="active">Active Only</option>
+                <option value="inactive">Inactive Only</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- Products Table -->
+    <div class="table-responsive">
+        <table class="admin-table" id="productsTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr data-status="{% if product.is_active %}active{% else %}inactive{% endif %}">
+                    <td>{{ product.id }}</td>
+                    <td class="product-image-cell">
+                        <img src="{{ get_product_image(product) }}" alt="{{ product.name }}" class="product-thumb">
+                    </td>
+                    <td>
+                        <strong>{{ product.name }}</strong>
+                        {% if product.country %}
+                        <br><small class="text-muted">{{ product.country }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="category-badge">
+                            <i class="fas fa-tag"></i> {{ product.category_ref.name if product.category_ref else 'Uncategorized' }}
+                        </span>
+                    </td>
+                    <td class="price-cell">{{ format_currency(product.price) }}</td>
+                    <td>
+                        {% if product.available > 5 %}
+                        <span class="stock-badge in-stock">
+                            <i class="fas fa-check-circle"></i> {{ product.available }}
+                        </span>
+                        {% elif product.available > 0 %}
+                        <span class="stock-badge low-stock">
+                            <i class="fas fa-exclamation-triangle"></i> {{ product.available }}
+                        </span>
+                        {% else %}
+                        <span class="stock-badge out-of-stock">
+                            <i class="fas fa-times-circle"></i> Out of Stock
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="status-badge {% if product.is_active %}status-active{% else %}status-inactive{% endif %}">
+                            {% if product.is_active %}
+                            <i class="fas fa-check-circle"></i> Active
+                            {% else %}
+                            <i class="fas fa-ban"></i> Inactive
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <a href="{{ url_for('admin_product_edit', product_id=product.id) }}" class="btn-icon edit" title="Edit Product">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{{ url_for('product_view', product_id=product.id) }}" class="btn-icon view" title="View on Store" target="_blank">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <button onclick="deleteProduct({{ product.id }}, '{{ product.name }}')" class="btn-icon delete" title="Delete Product">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center">
+                        <div class="empty-state">
+                            <i class="fas fa-box-open"></i>
+                            <p>No products found</p>
+                            <a href="{{ url_for('admin_product_add') }}" class="btn-primary">Add Your First Product</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Delete Product Modal -->
+<div class="modal" id="deleteModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Delete Product</h3>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete <strong id="deleteProductName"></strong>?</p>
+            <p class="text-warning">This action cannot be undone. All associated accounts will also be deleted.</p>
+        </div>
+        <div class="modal-footer">
+            <form id="deleteForm" method="POST">
+                <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn-danger">Delete Product</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Filter table function
+function filterTable() {
+    const searchValue = document.getElementById('searchInput').value.toLowerCase();
+    const statusValue = document.getElementById('statusFilter').value;
+    const rows = document.querySelectorAll('#productsTable tbody tr');
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        if (row.cells.length === 1) return; // Skip empty state row
+        
+        const productName = row.cells[2].innerText.toLowerCase();
+        const productStatus = row.getAttribute('data-status');
+        
+        let matchesSearch = productName.includes(searchValue);
+        let matchesStatus = statusValue === 'all' || productStatus === statusValue;
+        
+        if (matchesSearch && matchesStatus) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Show/hide empty state
+    const tbody = document.querySelector('#productsTable tbody');
+    const emptyRow = tbody.querySelector('.empty-state-row');
+    
+    if (visibleCount === 0 && !emptyRow) {
+        const newRow = document.createElement('tr');
+        newRow.className = 'empty-state-row';
+        newRow.innerHTML = `
+            <td colspan="8" class="text-center">
+                <div class="empty-state">
+                    <i class="fas fa-search"></i>
+                    <p>No products match your search</p>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(newRow);
+    } else if (visibleCount > 0 && emptyRow) {
+        emptyRow.remove();
+    }
+}
+
+// Delete product function
+function deleteProduct(productId, productName) {
+    const modal = document.getElementById('deleteModal');
+    const deleteForm = document.getElementById('deleteForm');
+    const productNameSpan = document.getElementById('deleteProductName');
+    
+    productNameSpan.textContent = productName;
+    deleteForm.action = `/admin/product/delete/${productId}`;
+    modal.classList.add('show');
+}
+
+// Close modal
+function closeModal() {
+    const modal = document.getElementById('deleteModal');
+    modal.classList.remove('show');
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('deleteModal');
+    if (event.target === modal) {
+        closeModal();
+    }
+});
+
+// Handle delete form submission
+document.getElementById('deleteForm')?.addEventListener('submit', function(e) {
+    if (!confirm('Are you absolutely sure? This cannot be undone.')) {
+        e.preventDefault();
+    }
+});
+</script>
+{% endblock %}

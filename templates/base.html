@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>{% block title %}Melody Store{% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="{{ url_for('index') }}" class="logo">
+                    <img src="{{ url_for('static', filename='logos/melody-logo.png') }}" alt="Melody Store" class="logo-img">
+                    <span class="logo-text">Melody Store</span>
+                </a>
+            </div>
+
+            <button class="mobile-menu-btn" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <div class="nav-menu">
+                <ul class="nav-categories">
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link">
+                            Categories <i class="fas fa-chevron-down"></i>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{{ url_for('category_view', slug='facebook') }}" class="dropdown-item">
+                                <img src="{{ url_for('static', filename='logos/facebook-logo.png') }}" alt="" class="cat-icon">
+                                Facebook
+                            </a></li>
+                            <li><a href="{{ url_for('category_view', slug='instagram') }}" class="dropdown-item">
+                                <img src="{{ url_for('static', filename='logos/instagram-logo.png') }}" alt="" class="cat-icon">
+                                Instagram
+                            </a></li>
+                            <li><a href="{{ url_for('category_view', slug='tiktok') }}" class="dropdown-item">
+                                <img src="{{ url_for('static', filename='logos/tiktok-logo.png') }}" alt="" class="cat-icon">
+                                TikTok
+                            </a></li>
+                            <li><a href="{{ url_for('category_view', slug='twitter') }}" class="dropdown-item">
+                                <img src="{{ url_for('static', filename='logos/twitter-logo.png') }}" alt="" class="cat-icon">
+                                Twitter (X)
+                            </a></li>
+                            <li><a href="{{ url_for('category_view', slug='vpn') }}" class="dropdown-item">
+                                <img src="{{ url_for('static', filename='logos/vpn-logo.png') }}" alt="" class="cat-icon">
+                                VPN
+                            </a></li>
+                            <li><a href="{{ url_for('category_view', slug='texting') }}" class="dropdown-item">
+                                <img src="{{ url_for('static', filename='logos/texting-logo.png') }}" alt="" class="cat-icon">
+                                Texting Apps
+                            </a></li>
+                            <li><a href="{{ url_for('category_view', slug='dating') }}" class="dropdown-item">
+                                <img src="{{ url_for('static', filename='logos/dating-logo.png') }}" alt="" class="cat-icon">
+                                Dating Logs
+                            </a></li>
+                            <li><a href="{{ url_for('category_view', slug='other') }}" class="dropdown-item">
+                                <img src="{{ url_for('static', filename='logos/other-logo.png') }}" alt="" class="cat-icon">
+                                Other Logs
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <div class="nav-actions">
+                    <a href="{{ url_for('my_orders') }}" class="nav-link">
+                        <i class="fas fa-box"></i>
+                        <span>My Orders</span>
+                    </a>
+                    <a href="{{ url_for('cart') }}" class="nav-link cart-link">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Cart</span>
+                        <span class="cart-badge" id="cart-count">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="footer-brand">
+                        <img src="{{ url_for('static', filename='logos/melody-logo.png') }}" alt="Melody Store" class="footer-logo">
+                        <h4>Melody Store</h4>
+                    </div>
+                    <p class="footer-description">
+                        Your trusted source for premium social media accounts and digital services.
+                    </p>
+                </div>
+
+                <div class="footer-col">
+                    <h5>Quick Links</h5>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('my_orders') }}">My Orders</a></li>
+                        <li><a href="{{ url_for('category_view', slug='all') }}">All Products</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h5>Categories</h5>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('category_view', slug='facebook') }}">Facebook</a></li>
+                        <li><a href="{{ url_for('category_view', slug='instagram') }}">Instagram</a></li>
+                        <li><a href="{{ url_for('category_view', slug='tiktok') }}">TikTok</a></li>
+                        <li><a href="{{ url_for('category_view', slug='twitter') }}">Twitter</a></li>
+                        <li><a href="{{ url_for('category_view', slug='vpn') }}">VPN</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h5>Support</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; {{ now.year }} Melody Store. All rights reserved.</p>
+                <div class="payment-icons">
+                    <i class="fab fa-cc-visa"></i>
+                    <i class="fab fa-cc-mastercard"></i>
+                    <i class="fab fa-cc-paypal"></i>
+                    <span class="paystack-badge">Paystack</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="overlay"></div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    {% block extra_js %}{% endblock %}
+
+    <script>
+        // Mobile menu functionality
+        $(document).ready(function() {
+            $('.mobile-menu-btn').click(function() {
+                $('.nav-menu').toggleClass('active');
+                $('.overlay').toggleClass('active');
+                $(this).find('i').toggleClass('fa-bars fa-times');
+            });
+
+            $('.overlay').click(function() {
+                $('.nav-menu').removeClass('active');
+                $('.overlay').removeClass('active');
+                $('.mobile-menu-btn i').removeClass('fa-times').addClass('fa-bars');
+            });
+
+            // Update cart count from localStorage
+            function updateCartCount() {
+                let cart = JSON.parse(localStorage.getItem('cart')) || [];
+                $('#cart-count').text(cart.length);
+            }
+            updateCartCount();
+        });
+    </script>
+</body>
+</html>
