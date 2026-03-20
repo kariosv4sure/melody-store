@@ -746,21 +746,85 @@ def payment_success():
 
 @app.route('/my-orders', methods=['GET', 'POST'])
 def my_orders():
-    """View orders by email"""
+    """View orders by email with verification"""
     if request.method == 'POST':
         email = request.form.get('email')
         if email:
-            orders = Order.query.filter_by(customer_email=email)\
-                .order_by(Order.created_at.desc())\
-                .all()
-            return render_template('orders-list.html', orders=orders, email=email)
+            # Store email in session
+            session['order_email'] = email
+            
+            # Send verification email with magic link
+            token = secrets.token_urlsafe(32)
+            session['verify_token'] = token
+            
+            # Create verification link
+            verify_url = url_for('verify_orders', token=token, _external=True)
+            
+            try:
+                # Send email with link
+                msg = Message(
+                    subject="View Your Orders - Melody Store",
+                    recipients=[email],
+                    body=f"""
+Hello,
+
+Click the link below to view your orders:
+
+{verify_url}
+
+This link will expire in 1 hour.
+
+If you didn't request this, please ignore this email.
+
+Melody Store Team
+                    """,
+                    html=f"""
+                    <h2>View Your Orders</h2>
+                    <p>Click the button below to view your orders:</p>
+                    <a href="{verify_url}" style="display: inline-block; padding: 10px 20px; background: #2563eb; color: white; text-decoration: none; border-radius: 5px;">View Orders</a>
+                    <p>This link will expire in 1 hour.</p>
+                    <p>If you didn't request this, please ignore this email.</p>
+                    """
+                )
+                mail.send(msg)
+                flash('📧 Check your email for a verification link to view your orders!', 'success')
+            except Exception as e:
+                logger.error(f"Failed to send verification email: {str(e)}")
+                flash('⚠️ Could not send email. Please try again.', 'error')
+            
+            return redirect(url_for('my_orders'))
+    
     return render_template('my-orders.html')
 
-@app.route('/order/<order_number>')
-def order_detail(order_number):
-    """View single order details"""
-    order = Order.query.filter_by(order_number=order_number).first_or_404()
-    return render_template('order-detail.html', order=order)
+
+@app.route('/verify-orders/<token>')
+def verify_orders(token):
+    """Verify email and show orders"""
+    if session.get('verify_token') != token:
+        flash('Invalid or expired verification link', 'error')
+        return redirect(url_for('my_orders'))
+    
+    email = session.get('order_email')
+    if not email:
+        flash('Session expired. Please try again.', 'error')
+        return redirect(url_for('my_orders'))
+    
+    orders = Order.query.filter_by(customer_email=email)\
+        .order_by(Order.created_at.desc())\
+        .all()
+    
+    total_pages = 1
+    current_page = 1
+    
+    # Clear verification data
+    session.pop('verify_token', None)
+    session.pop('order_email', None)
+    
+    return render_template('orders-list.html', 
+                         orders=orders, 
+                         email=email,
+                         total_pages=total_pages,
+                         current_page=current_page)
 
 # ========== PAYSTACK WEBHOOK ==========
 
