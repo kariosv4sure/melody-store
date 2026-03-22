@@ -208,3 +208,19 @@ class Order(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'delivered_at': self.delivered_at.isoformat() if self.delivered_at else None
         }
+
+# ============= USER MODEL ============
+
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))
+    email = db.Column(db.String(200), unique=True, nullable=False, index=True)
+    password_hash = db.Column(db.String(200), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+    
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)

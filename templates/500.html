@@ -1,10 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}500 • System Meltdown • Melody Store{% endblock %}
+{% block title %}500 • Server Error • Melody Store{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* Peak 500 specific styles */
     .error-500 {
         min-height: 70vh;
         display: flex;
@@ -19,108 +18,99 @@
 
 {% block content %}
 <div class="error-500">
-    <!-- Animated Background - System Crash Theme -->
     <div class="error-background">
         <div class="binary binary-1">01010100 01101001 01101101 01100101</div>
         <div class="binary binary-2">01101111 01110101 01110100 00100000</div>
         <div class="binary binary-3">01101111 01100110 00100000 01110011</div>
         <div class="binary binary-4">01111001 01101110 01100011 01111001</div>
         <div class="glitch-line"></div>
-        <div class="glitch-line"></div>
-        <div class="glitch-line"></div>
     </div>
 
-    <div class="error-container" data-aos="zoom-in" data-aos-duration="800">
-        <!-- Exploding 500 -->
+    <div class="error-container">
         <div class="error-explosion">
             <div class="explosion-number">5</div>
             <div class="explosion-center">
-                <i class="fas fa-bomb"></i>
-                <div class="explosion-ring"></div>
-                <div class="explosion-ring"></div>
+                <i class="fas fa-server"></i>
                 <div class="explosion-ring"></div>
             </div>
             <div class="explosion-number">0</div>
             <div class="explosion-number">0</div>
         </div>
 
-        <!-- Warning Icon -->
         <div class="warning-signal">
             <div class="warning-icon">
                 <i class="fas fa-exclamation-triangle"></i>
             </div>
-            <div class="warning-pulse"></div>
-            <div class="warning-pulse delay-1"></div>
-            <div class="warning-pulse delay-2"></div>
         </div>
 
-        <!-- Error Message -->
-        <div class="error-message" data-aos="fade-up" data-aos-delay="200">
-            <h2 class="error-title">System Meltdown Detected!</h2>
+        <div class="error-message">
+            <h2 class="error-title">⚠️ Something Went Wrong ⚠️</h2>
             <div class="error-divider">
                 <span class="line"></span>
-                <i class="fas fa-skull"></i>
+                <i class="fas fa-heart-broken"></i>
                 <span class="line"></span>
             </div>
-            <p class="error-text">Our servers are having a bit of a moment...</p>
-            <p class="error-subtext">Don't panic! Our tech wizards are on it!</p>
+            
+            <!-- Important Transaction Message -->
+            <div class="transaction-notice">
+                <i class="fas fa-credit-card"></i>
+                <div class="notice-content">
+                    <strong>💰 Important Payment Information:</strong>
+                    <p>If you just made a transaction and saw this page instead of your credentials:</p>
+                    <ul>
+                        <li>✅ Your payment has been received successfully</li>
+                        <li>✅ Your account credentials have been sent to your email</li>
+                        <li>✅ Check your inbox (and spam folder) for order confirmation</li>
+                        <li>❌ We couldn't display the success page due to a server hiccup</li>
+                    </ul>
+                    <p class="notice-footer">Your order is safe! The email contains all your account details.</p>
+                </div>
+            </div>
+
+            <p class="error-text">Our servers had a momentary meltdown. Our tech team is already on it!</p>
+            <p class="error-subtext">Don't worry - your data is safe. If you paid, check your email for confirmation.</p>
         </div>
 
-        <!-- Status Dashboard -->
-        <div class="status-dashboard" data-aos="fade-up" data-aos-delay="400">
-            <h3 class="status-title">System Status:</h3>
+        <div class="status-dashboard">
+            <h3 class="status-title">🔧 System Status:</h3>
             <div class="status-grid">
                 <div class="status-item">
-                    <span class="status-label">Servers:</span>
-                    <span class="status-value status-error">🤯 Overloaded</span>
+                    <span class="status-label">Payments:</span>
+                    <span class="status-value status-success">✅ Processing normally</span>
                 </div>
                 <div class="status-item">
-                    <span class="status-label">Database:</span>
-                    <span class="status-value status-warning">😵 Confused</span>
+                    <span class="status-label">Emails:</span>
+                    <span class="status-value status-success">✅ Being sent</span>
                 </div>
                 <div class="status-item">
-                    <span class="status-label">Tech Team:</span>
-                    <span class="status-value status-success">⚡ Working overtime</span>
+                    <span class="status-label">Credentials:</span>
+                    <span class="status-value status-success">✅ Delivered via email</span>
                 </div>
                 <div class="status-item">
-                    <span class="status-label">Coffee Level:</span>
-                    <span class="status-value status-critical">☕ Critical</span>
+                    <span class="status-label">Display Page:</span>
+                    <span class="status-value status-warning">⚠️ Having issues</span>
                 </div>
             </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="error-actions" data-aos="fade-up" data-aos-delay="600">
+        <div class="error-actions">
             <div class="actions-grid">
                 <a href="{{ url_for('index') }}" class="action-btn primary">
                     <i class="fas fa-home"></i>
                     <span>Go Home</span>
                 </a>
-                <button onclick="location.reload()" class="action-btn secondary">
-                    <i class="fas fa-sync-alt"></i>
-                    <span>Try Again</span>
-                </button>
-                <a href="#" class="action-btn tertiary">
+                <a href="{{ url_for('my_orders') }}" class="action-btn secondary">
+                    <i class="fas fa-box"></i>
+                    <span>Check Orders</span>
+                </a>
+                <a href="mailto:support@melodystore.com" class="action-btn tertiary">
                     <i class="fas fa-headset"></i>
                     <span>Contact Support</span>
                 </a>
             </div>
         </div>
 
-        <!-- Progress Bar -->
-        <div class="fix-progress" data-aos="fade-up" data-aos-delay="800">
-            <div class="progress-label">
-                <span>Fixing the issue...</span>
-                <span class="progress-percentage">0%</span>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
-            </div>
-            <p class="progress-hint">Estimated time: <span id="countdown">10</span> seconds (just kidding, we're working on it!)</p>
-        </div>
-
-        <!-- Console Output -->
-        <div class="console-output" data-aos="fade-up" data-aos-delay="1000">
+        <div class="console-output">
             <div class="console-header">
                 <span class="console-dot red"></span>
                 <span class="console-dot yellow"></span>
@@ -128,11 +118,24 @@
                 <span class="console-title">Error Log</span>
             </div>
             <div class="console-body">
-                <p class="console-line"><span class="console-timestamp">[ERROR]</span> Something went really wrong...</p>
-                <p class="console-line"><span class="console-timestamp">[DEBUG]</span> Have you tried turning it off and on again?</p>
-                <p class="console-line"><span class="console-timestamp">[INFO]</span> Just kidding, our engineers are fixing it!</p>
-                <p class="console-line typing" id="typingLine"></p>
+                <p class="console-line"><span class="console-timestamp">[ERROR]</span> Page display failed</p>
+                <p class="console-line"><span class="console-timestamp">[INFO]</span> Payment processed: ✅ SUCCESS</p>
+                <p class="console-line"><span class="console-timestamp">[INFO]</span> Email sent: ✅ DELIVERED</p>
+                <p class="console-line"><span class="console-timestamp">[INFO]</span> Credentials: ✅ IN YOUR INBOX</p>
+                <p class="console-line"><span class="console-timestamp">[WARN]</span> Success page: ❌ Failed to load</p>
+                <p class="console-line typing">> Engineers are fixing the display issue...</p>
             </div>
+        </div>
+
+        <div class="fix-progress">
+            <div class="progress-label">
+                <span>Recovery in progress...</span>
+                <span class="progress-percentage">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p class="progress-hint">Check your email for order confirmation. We'll fix this display issue shortly!</p>
         </div>
     </div>
 </div>
@@ -140,13 +143,11 @@
 
 {% block extra_js %}
 <script>
-    // Peak 500 animations
     document.addEventListener('DOMContentLoaded', function() {
-        // Progress bar animation
         const progressFill = document.getElementById('progressFill');
         const progressPercent = document.querySelector('.progress-percentage');
         let width = 0;
-        
+
         const progressInterval = setInterval(() => {
             if (width >= 100) {
                 width = 0;
@@ -154,55 +155,9 @@
                 width += Math.random() * 3;
                 if (width > 100) width = 100;
             }
-            
-            if (progressFill) {
-                progressFill.style.width = width + '%';
-            }
-            if (progressPercent) {
-                progressPercent.textContent = Math.floor(width) + '%';
-            }
+            if (progressFill) progressFill.style.width = width + '%';
+            if (progressPercent) progressPercent.textContent = Math.floor(width) + '%';
         }, 500);
-
-        // Countdown timer
-        const countdownEl = document.getElementById('countdown');
-        if (countdownEl) {
-            let count = 10;
-            const countdownInterval = setInterval(() => {
-                count--;
-                if (count < 0) {
-                    count = 10;
-                }
-                countdownEl.textContent = count;
-            }, 1000);
-        }
-
-        // Typing effect
-        const typingLine = document.getElementById('typingLine');
-        if (typingLine) {
-            const messages = [
-                '> Analyzing error...',
-                '> Blaming the server...',
-                '> Making coffee...',
-                '> Actually fixing it now...',
-                '> Just kidding, still making coffee...',
-                '> Error fixed! (not really)',
-                '> Please stand by...'
-            ];
-            let msgIndex = 0;
-            
-            setInterval(() => {
-                msgIndex = (msgIndex + 1) % messages.length;
-                typingLine.textContent = messages[msgIndex];
-            }, 3000);
-        }
-
-        // Random glitch effects
-        setInterval(() => {
-            const glitchLines = document.querySelectorAll('.glitch-line');
-            glitchLines.forEach(line => {
-                line.style.transform = `translateX(${Math.random() * 10 - 5}px)`;
-            });
-        }, 100);
     });
 </script>
 {% endblock %}

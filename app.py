@@ -1,12 +1,13 @@
 import os
 import secrets
+import requests
 import json
 import hmac
 import hashlib
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_mail import Mail, Message
-from models import db, Admin, Product, Account, Order, Category
+from models import db, Admin, Product, Account, Order, Category, User
 from dotenv import load_dotenv
 import requests
 from functools import wraps
@@ -37,11 +38,23 @@ PAYSTACK_PUBLIC_KEY = os.getenv('PAYSTACK_PUBLIC_KEY')
 PAYSTACK_SECRET_KEY = os.getenv('PAYSTACK_SECRET_KEY')
 PAYSTACK_WEBHOOK_SECRET = os.getenv('PAYSTACK_WEBHOOK_SECRET', '')
 
+# GROQ
+GROQ_API_KEY = os.getenv('GROQ_API_KEY')
+GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+
+GROQ_MODELS = [
+    "llama-3.3-70b-versatile",      # Best overall
+    "llama-3.1-8b-instant",          # Fast fallback
+    "mixtral-8x7b-32768",            # Strong alternative
+    "gemma2-9b-it",                  # Lightweight fallback
+    "llama-3.2-3b-preview"           # Last resort
+]
+
 # Email configuration
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
-app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
-app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True') == 'True'
-app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL', 'False') == 'True'
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 465))
+app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'False') == 'True'
+app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL', 'True') == 'True'
 app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER', app.config['MAIL_USERNAME'])
@@ -478,6 +491,74 @@ def subscribe():
         flash('Please enter a valid email', 'error')
     return redirect(url_for('index'))
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        confirm = request.form.get('confirm_password')
+        
+        if password != confirm:
+            flash('Passwords do not match', 'error')
+            return redirect(url_for('register'))
+        
+        from models import User
+        if User.query.filter_by(email=email).first():
+            flash('Email already registered', 'error')
+            return redirect(url_for('register'))
+        
+        user = User(name=name, email=email)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        
+        flash('Registration successful! Please login.', 'success')
+        return redirect(url_for('login'))
+    
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        from models import User
+        user = User.query.filter_by(email=email).first()
+        
+        if user and user.check_password(password):
+            session['user_id'] = user.id
+            session['user_name'] = user.name
+            session['user_email'] = user.email
+            flash(f'Welcome back, {user.name}!', 'success')
+            return redirect(url_for('index'))
+        else:
+            flash('Invalid email or password', 'error')
+    
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    session.pop('user_name', None)
+    session.pop('user_email', None)
+    flash('Logged out successfully', 'success')
+    return redirect(url_for('index'))
+
+@app.route('/dashboard')
+def dashboard():
+    """User dashboard - shows orders and AI assistant"""
+    if not session.get('user_id'):
+        flash('Please login to access your dashboard', 'error')
+        return redirect(url_for('login'))
+    
+    from models import User
+    user = User.query.get(session['user_id'])
+    orders = Order.query.filter_by(customer_email=user.email).order_by(Order.created_at.desc()).all()
+    
+    return render_template('dashboard.html', user=user, orders=orders)
+
 @app.route('/category/<slug>')
 def category_view(slug):
     """View products in a category"""
@@ -576,7 +657,7 @@ def checkout(product_id):
     # Quick availability check
     available = Account.query.filter_by(product_id=product_id, sold=False).first()
     available_count = Account.query.filter_by(product_id=product_id, sold=False).count()
-    
+
     if not available:
         flash('Sorry, this product is currently out of stock!', 'error')
         return redirect(url_for('product_view', product_id=product_id))
@@ -734,15 +815,22 @@ def payment_success():
     if not last_order:
         return redirect(url_for('index'))
 
-    # Ensure amount is numeric
-    if 'amount' in last_order and last_order['amount']:
-        last_order['amount'] = float(last_order['amount'])
-
+    # Get the actual order from database using the order number
+    order_number = last_order.get('order_number')
+    order = None
+    
+    if order_number:
+        order = Order.query.filter_by(order_number=order_number).first()
+    
     # Clear from session after displaying
     session.pop('last_order', None)
     session.pop('pending_reference', None)
-
-    return render_template('success.html', order=last_order, now=datetime.utcnow())
+    
+    # If we found the order in DB, use it, otherwise fallback to session data
+    if order:
+        return render_template('success.html', order=order, now=datetime.utcnow())
+    else:
+        return render_template('success.html', order=last_order, now=datetime.utcnow())
 
 @app.route('/my-orders', methods=['GET', 'POST'])
 def my_orders():
@@ -1292,6 +1380,107 @@ def api_search():
         'category': p.category_ref.name if p.category_ref else None,
         'image': url_for('static', filename=f'logos/{p.category_ref.slug if p.category_ref else "default"}-logo.png')
     } for p in products])
+
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    """AI Chatbot with multiple model fallbacks"""
+    if not session.get('user_id'):
+        return jsonify({'error': 'Not logged in'}), 401
+    
+    data = request.json
+    message = data.get('message', '')
+    user = User.query.get(session['user_id'])
+    
+    system_prompt = f"""You are Melody AI, the official assistant for Melody Store.
+
+📌 YOUR IDENTITY:
+- Name: Melody AI
+- Store: Melody Store (premium digital accounts marketplace)
+- Customer: {user.name} ({user.email})
+
+📌 WHAT YOU DO:
+- Help customers find products (TikTok, Instagram, Twitter, Facebook, VPN, Texting Apps)
+- Explain instant delivery process
+- Answer pricing questions
+- Provide account usage tips
+- Be friendly and engaging
+
+📌 WHAT YOU DON'T DO:
+- Ask for passwords, card details, or sensitive info
+- Process refunds (direct to support@melodystore.com)
+- Guarantee accounts beyond 7-day warranty
+- Share other customers' info
+- Be rude or unprofessional
+
+📌 TONE:
+- Professional but warm
+- Use emojis occasionally 😊
+- Be helpful first, funny second
+- Keep responses under 200 words
+
+Current time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+User location: Nigeria (inferred)
+
+Respond naturally to: {message}"""
+
+    # Try each model until one works
+    last_error = None
+    
+    for model in GROQ_MODELS:
+        try:
+            response = requests.post(
+                GROQ_API_URL,
+                headers={
+                    "Authorization": f"Bearer {GROQ_API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": model,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": message}
+                    ],
+                    "temperature": 0.7,
+                    "max_tokens": 500,
+                    "top_p": 0.9
+                },
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                reply = result['choices'][0]['message']['content']
+                logger.info(f"Chat success with model: {model}")
+                return jsonify({
+                    'reply': reply,
+                    'model': model,
+                    'success': True
+                })
+            else:
+                logger.warning(f"Model {model} failed with status {response.status_code}")
+                last_error = f"Model {model} failed"
+                continue
+                
+        except requests.exceptions.Timeout:
+            logger.warning(f"Model {model} timed out")
+            last_error = "Request timed out"
+            continue
+        except requests.exceptions.RequestException as e:
+            logger.warning(f"Model {model} error: {str(e)}")
+            last_error = str(e)
+            continue
+        except Exception as e:
+            logger.warning(f"Unexpected error with {model}: {str(e)}")
+            last_error = str(e)
+            continue
+    
+    # All models failed
+    logger.error(f"All models failed. Last error: {last_error}")
+    return jsonify({
+        'reply': "I'm having trouble connecting right now. Please try again in a moment or contact support@melody-store.onrender.com 🙏",
+        'success': False,
+        'error': last_error
+    }), 200  # Still return 200 so frontend doesn't crash
 
 @app.route('/admin/test-email', methods=['GET', 'POST'])
 @admin_required

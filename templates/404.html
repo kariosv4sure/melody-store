@@ -1,10 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}404 • Lost in the Melody • Melody Store{% endblock %}
+{% block title %}404 • Page Not Found • Melody Store{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* Peak 404 specific styles */
     .error-404 {
         min-height: 70vh;
         display: flex;
@@ -12,52 +11,231 @@
         justify-content: center;
         position: relative;
         overflow: hidden;
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(124, 58, 237, 0.05));
+    }
+
+    .error-container {
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .glitch-number {
+        font-size: 8rem;
+        font-weight: 800;
+        color: var(--primary);
+        text-shadow: 2px 2px 0 #ff00ff, -2px -2px 0 #00ffff;
+        animation: glitch 3s infinite;
+        margin-bottom: 1rem;
+    }
+
+    @keyframes glitch {
+        0%, 100% { transform: skew(0deg, 0deg); text-shadow: 2px 2px 0 #ff00ff, -2px -2px 0 #00ffff; }
+        95% { transform: skew(0deg, 0deg); text-shadow: 2px 2px 0 #ff00ff, -2px -2px 0 #00ffff; }
+        96% { transform: skew(2deg, 1deg); text-shadow: 4px 4px 0 #ff00ff, -4px -4px 0 #00ffff; }
+        97% { transform: skew(-2deg, -1deg); text-shadow: -4px -4px 0 #ff00ff, 4px 4px 0 #00ffff; }
+        98% { transform: skew(0deg, 0deg); text-shadow: 2px 2px 0 #ff00ff, -2px -2px 0 #00ffff; }
+    }
+
+    .error-title {
+        font-size: 1.8rem;
+        color: var(--dark);
+        margin-bottom: 1rem;
+    }
+
+    .error-divider {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        margin: 1.5rem 0;
+    }
+
+    .error-divider .line {
+        width: 60px;
+        height: 2px;
+        background: var(--gray);
+    }
+
+    .error-divider i {
+        font-size: 1.5rem;
+        color: var(--primary);
+    }
+
+    .error-text {
+        color: var(--text);
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .error-subtext {
+        color: var(--text-light);
+        font-size: 0.95rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Help Section */
+    .help-section {
+        background: var(--white);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin: 2rem 0;
+        box-shadow: var(--shadow);
+    }
+
+    .help-title {
+        font-size: 1.2rem;
+        color: var(--dark);
+        margin-bottom: 1.5rem;
+    }
+
+    .help-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1rem;
+    }
+
+    .help-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        background: var(--light);
+        border-radius: 0.75rem;
+        text-decoration: none;
+        color: var(--text);
+        transition: all 0.2s;
+    }
+
+    .help-card:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-3px);
+    }
+
+    .help-card i {
+        font-size: 1.5rem;
+    }
+
+    .help-card span {
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    /* Search Bar */
+    .search-section {
+        margin: 2rem 0;
+    }
+
+    .search-form {
+        display: flex;
+        gap: 0.5rem;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 0.875rem 1rem;
+        border: 2px solid var(--gray);
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        transition: all 0.2s;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+
+    .search-btn {
+        padding: 0.875rem 1.5rem;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .search-btn:hover {
+        background: var(--primary-dark);
+    }
+
+    /* Fun Fact */
+    .fun-fact {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        border-radius: 1rem;
+        padding: 1.5rem;
+        color: white;
+        margin-top: 2rem;
+    }
+
+    .fact-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255,255,255,0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-size: 0.8rem;
+        margin-bottom: 1rem;
+    }
+
+    .fact-text {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 768px) {
+        .glitch-number {
+            font-size: 5rem;
+        }
+        .error-title {
+            font-size: 1.4rem;
+        }
+        .help-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        .search-form {
+            flex-direction: column;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .help-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="error-404">
-    <!-- Animated Background -->
-    <div class="error-background">
-        <div class="note note-1">♪</div>
-        <div class="note note-2">♫</div>
-        <div class="note note-3">♩</div>
-        <div class="note note-4">♬</div>
-        <div class="note note-5">🎵</div>
-        <div class="note note-6">🎶</div>
-    </div>
-
-    <div class="error-container" data-aos="zoom-in" data-aos-duration="800">
-        <!-- Glitch Effect 404 -->
-        <div class="error-glitch">
-            <h1 class="glitch-number" data-text="404">404</h1>
-        </div>
-        
-        <!-- Broken Record Animation -->
-        <div class="broken-record">
-            <div class="record">
-                <i class="fas fa-compact-disc"></i>
-                <div class="record-groove"></div>
-            </div>
-            <div class="broken-line"></div>
-        </div>
+    <div class="error-container">
+        <!-- Glitch 404 -->
+        <div class="glitch-number" data-text="404">404</div>
 
         <!-- Error Message -->
-        <div class="error-message" data-aos="fade-up" data-aos-delay="200">
-            <h2 class="error-title">Lost in the Melody</h2>
+        <div class="error-message">
+            <h2 class="error-title">Page Not Found</h2>
             <div class="error-divider">
                 <span class="line"></span>
                 <i class="fas fa-music"></i>
                 <span class="line"></span>
             </div>
-            <p class="error-text">The track you're looking for seems to have skipped...</p>
-            <p class="error-subtext">Don't worry, even the best records skip sometimes!</p>
+            <p class="error-text">The page you're looking for seems to have skipped a beat.</p>
+            <p class="error-subtext">Maybe it was deleted, moved, or never existed. But don't worry — the melody continues!</p>
         </div>
 
         <!-- Helpful Links -->
-        <div class="error-help" data-aos="fade-up" data-aos-delay="400">
-            <h3 class="help-title">Maybe try one of these:</h3>
+        <div class="help-section">
+            <h3 class="help-title">🎵 Maybe you're looking for one of these:</h3>
             <div class="help-grid">
                 <a href="{{ url_for('index') }}" class="help-card">
                     <i class="fas fa-home"></i>
@@ -75,9 +253,21 @@
                     <i class="fab fa-tiktok"></i>
                     <span>TikTok</span>
                 </a>
+                <a href="{{ url_for('category_view', slug='twitter') }}" class="help-card">
+                    <i class="fab fa-twitter"></i>
+                    <span>Twitter</span>
+                </a>
+                <a href="{{ url_for('category_view', slug='vpn') }}" class="help-card">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>VPN</span>
+                </a>
                 <a href="{{ url_for('my_orders') }}" class="help-card">
-                    <i class="fas fa-shopping-bag"></i>
+                    <i class="fas fa-box"></i>
                     <span>My Orders</span>
+                </a>
+                <a href="{{ url_for('cart') }}" class="help-card">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Cart</span>
                 </a>
                 <a href="#" class="help-card">
                     <i class="fas fa-headset"></i>
@@ -87,9 +277,9 @@
         </div>
 
         <!-- Search Bar -->
-        <div class="error-search" data-aos="fade-up" data-aos-delay="600">
-            <form action="#" method="GET" class="search-form">
-                <input type="text" placeholder="Search for what you're looking for..." class="search-input">
+        <div class="search-section">
+            <form action="{{ url_for('api_search') }}" method="GET" class="search-form" onsubmit="return searchProducts(event)">
+                <input type="text" name="q" class="search-input" placeholder="Search products..." id="searchInput">
                 <button type="submit" class="search-btn">
                     <i class="fas fa-search"></i>
                 </button>
@@ -97,42 +287,24 @@
         </div>
 
         <!-- Fun Fact -->
-        <div class="error-fact" data-aos="fade-up" data-aos-delay="800">
+        <div class="fun-fact">
             <div class="fact-badge">
                 <i class="fas fa-lightbulb"></i>
                 <span>Did You Know?</span>
             </div>
-            <p class="fact-text">The 404 error was named after room 404 at CERN where the web was born!</p>
+            <p class="fact-text">The 404 error code was named after room 404 at CERN, where the World Wide Web was born. Even the best URLs hit a wrong note sometimes!</p>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
 <script>
-    // Peak 404 animations
-    document.addEventListener('DOMContentLoaded', function() {
-        // Glitch effect intensifies on hover
-        const glitch = document.querySelector('.glitch-number');
-        if (glitch) {
-            glitch.addEventListener('mouseenter', function() {
-                this.style.animation = 'none';
-                this.offsetHeight; // Reflow
-                this.style.animation = 'glitch 0.5s infinite';
-            });
-            
-            glitch.addEventListener('mouseleave', function() {
-                this.style.animation = 'glitch 3s infinite';
-            });
-        }
-        
-        // Broken record spin
-        const record = document.querySelector('.record');
-        if (record) {
-            setInterval(() => {
-                record.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
-            }, 2000);
-        }
-    });
+function searchProducts(event) {
+    event.preventDefault();
+    const query = document.getElementById('searchInput').value.trim();
+    if (query) {
+        window.location.href = "{{ url_for('index') }}?search=" + encodeURIComponent(query);
+    }
+    return false;
+}
 </script>
 {% endblock %}

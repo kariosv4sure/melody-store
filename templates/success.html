@@ -25,15 +25,15 @@
             </div>
             <h2>Order Details</h2>
         </div>
-        
+
         <div class="order-info">
             <div class="order-info-row">
                 <span class="info-label">Order Number:</span>
-                <span class="info-value order-number">#{{ order.order_number }}</span>
+                <span class="info-value order-number">#{{ order.order_number or order.get('order_number') }}</span>
             </div>
             <div class="order-info-row">
                 <span class="info-label">Order Date:</span>
-                <span class="info-value">{{ order.created_at.strftime('%B %d, %Y at %I:%M %p') if order.created_at else 'Just now' }}</span>
+                <span class="info-value">{{ order.created_at.strftime('%B %d, %Y at %I:%M %p') if order.created_at else (order.get('created_at') or 'Just now') }}</span>
             </div>
             <div class="order-info-row">
                 <span class="info-label">Payment Method:</span>
@@ -43,24 +43,24 @@
                 </span>
             </div>
         </div>
-        
+
         <!-- Product Summary -->
         <div class="product-summary">
             <h3>Product Summary</h3>
             <div class="summary-item">
                 <div class="summary-item-info">
-                    <span class="item-name">{{ order.product_name }}</span>
+                    <span class="item-name">{{ order.product_name or order.get('product_name') }}</span>
                     <span class="item-quantity">x1</span>
                 </div>
-                <span class="item-price">{{ format_currency(order.amount|float) }}</span>
+                <span class="item-price">{{ format_currency(order.amount|float if order.amount else order.get('amount')|float) }}</span>
             </div>
             <div class="summary-total">
                 <span>Total Paid:</span>
-                <span class="total-amount">{{ format_currency(order.amount|float) }}</span>
+                <span class="total-amount">{{ format_currency(order.amount|float if order.amount else order.get('amount')|float) }}</span>
             </div>
         </div>
     </div>
-    
+
     <!-- Account Credentials Card -->
     <div class="success-card account-card" id="account-card">
         <div class="card-header">
@@ -69,13 +69,15 @@
             </div>
             <h2>Your Account Credentials</h2>
         </div>
-        
+
         <div class="alert alert-success">
             <i class="fas fa-envelope"></i>
             <p>We've also sent these details to your email. Please save them now!</p>
         </div>
-        
+
         <div class="credentials-container">
+            {% set account = order.account if order.account else order.get('account', {}) %}
+            
             <!-- Email/Username -->
             <div class="credential-group">
                 <label class="credential-label">
@@ -83,14 +85,14 @@
                     Email / Username
                 </label>
                 <div class="credential-box" id="email-credential">
-                    <span class="credential-value">{{ order.account.email }}</span>
-                    <button class="btn-copy" onclick="copyToClipboard('{{ order.account.email }}', 'email-credential')">
+                    <span class="credential-value">{{ account.email or account.get('email') }}</span>
+                    <button class="btn-copy" onclick="copyToClipboard('{{ account.email or account.get('email') }}', 'email-credential')">
                         <i class="far fa-copy"></i>
                         <span>Copy</span>
                     </button>
                 </div>
             </div>
-            
+
             <!-- Password -->
             <div class="credential-group">
                 <label class="credential-label">
@@ -102,54 +104,54 @@
                         ••••••••••••
                     </span>
                     <div class="credential-actions">
-                        <button class="btn-toggle" onclick="togglePassword('{{ order.account.password }}')">
+                        <button class="btn-toggle" onclick="togglePassword('{{ account.password or account.get('password') }}')">
                             <i class="far fa-eye" id="password-toggle-icon"></i>
                         </button>
-                        <button class="btn-copy" onclick="copyToClipboard('{{ order.account.password }}', 'password-credential')">
+                        <button class="btn-copy" onclick="copyToClipboard('{{ account.password or account.get('password') }}', 'password-credential')">
                             <i class="far fa-copy"></i>
                             <span>Copy</span>
                         </button>
                     </div>
                 </div>
             </div>
-            
+
             <!-- 2FA Code (if available) -->
-            {% if order.account.two_fa %}
+            {% if account.two_fa or account.get('two_fa') %}
             <div class="credential-group">
                 <label class="credential-label">
                     <i class="fas fa-shield-alt"></i>
                     2FA / Backup Code
                 </label>
                 <div class="credential-box" id="2fa-credential">
-                    <span class="credential-value">{{ order.account.two_fa }}</span>
-                    <button class="btn-copy" onclick="copyToClipboard('{{ order.account.two_fa }}', '2fa-credential')">
+                    <span class="credential-value">{{ account.two_fa or account.get('two_fa') }}</span>
+                    <button class="btn-copy" onclick="copyToClipboard('{{ account.two_fa or account.get('two_fa') }}', '2fa-credential')">
                         <i class="far fa-copy"></i>
                         <span>Copy</span>
                     </button>
                 </div>
             </div>
             {% endif %}
-            
+
             <!-- Additional Notes (if available) -->
-            {% if order.account.notes %}
+            {% if account.notes or account.get('notes') %}
             <div class="credential-group">
                 <label class="credential-label">
                     <i class="fas fa-sticky-note"></i>
                     Additional Information
                 </label>
                 <div class="notes-box">
-                    <p>{{ order.account.notes }}</p>
+                    <p>{{ account.notes or account.get('notes') }}</p>
                 </div>
             </div>
             {% endif %}
         </div>
-        
+
         <div class="warning-note">
             <i class="fas fa-exclamation-triangle"></i>
             <p><strong>Important:</strong> These credentials will only be shown once. Please save them securely. We recommend changing the password immediately after login.</p>
         </div>
     </div>
-    
+
     <!-- Next Steps Card -->
     <div class="success-card steps-card">
         <div class="card-header">
@@ -158,7 +160,7 @@
             </div>
             <h2>Next Steps</h2>
         </div>
-        
+
         <div class="steps-grid">
             <div class="step-item">
                 <div class="step-number">1</div>
@@ -167,7 +169,6 @@
                     <p>Copy and save your login details in a secure place</p>
                 </div>
             </div>
-            
             <div class="step-item">
                 <div class="step-number">2</div>
                 <div class="step-content">
@@ -175,7 +176,6 @@
                     <p>Use the credentials to access your new account</p>
                 </div>
             </div>
-            
             <div class="step-item">
                 <div class="step-number">3</div>
                 <div class="step-content">
@@ -183,7 +183,6 @@
                     <p>Update the password for security</p>
                 </div>
             </div>
-            
             <div class="step-item">
                 <div class="step-number">4</div>
                 <div class="step-content">
@@ -193,30 +192,27 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Action Buttons -->
     <div class="success-actions">
         <button class="btn-print" onclick="window.print()">
             <i class="fas fa-print"></i>
             Print Details
         </button>
-        
         <button class="btn-download" onclick="downloadCredentials()">
             <i class="fas fa-download"></i>
             Download as Text
         </button>
-        
-        <a href="{{ url_for('my_orders') }}?email={{ order.customer_email }}" class="btn-orders">
+        <a href="{{ url_for('my_orders') }}?email={{ order.customer_email or order.get('customer_email') }}" class="btn-orders">
             <i class="fas fa-box"></i>
             View My Orders
         </a>
-        
         <a href="{{ url_for('index') }}" class="btn-shop">
             <i class="fas fa-shopping-bag"></i>
             Continue Shopping
         </a>
     </div>
-    
+
     <!-- Support Section -->
     <div class="support-section">
         <div class="support-icon">
@@ -234,14 +230,14 @@
 </div>
 
 <!-- Hidden data for download -->
-<div id="order-data" 
-     data-order-number="{{ order.order_number }}"
-     data-product-name="{{ order.product_name }}"
-     data-amount="{{ order.amount }}"
-     data-email="{{ order.account.email }}"
-     data-password="{{ order.account.password }}"
-     data-twofa="{{ order.account.two_fa or '' }}"
-     data-notes="{{ order.account.notes or '' }}">
+<div id="order-data"
+     data-order-number="{{ order.order_number or order.get('order_number') }}"
+     data-product-name="{{ order.product_name or order.get('product_name') }}"
+     data-amount="{{ order.amount or order.get('amount') }}"
+     data-email="{{ order.account.email if order.account else order.get('account', {}).get('email') }}"
+     data-password="{{ order.account.password if order.account else order.get('account', {}).get('password') }}"
+     data-twofa="{{ order.account.two_fa if order.account else order.get('account', {}).get('two_fa') or '' }}"
+     data-notes="{{ order.account.notes if order.account else order.get('account', {}).get('notes') or '' }}">
 </div>
 
 <!-- Print-friendly stylesheet -->
@@ -250,28 +246,17 @@
         size: A4;
         margin: 1cm;
     }
-    
-    .navbar,
-    .footer,
-    .success-header,
-    .success-actions,
-    .support-section,
-    .btn-copy,
-    .btn-toggle,
-    .warning-note {
+    .navbar, .footer, .success-header, .success-actions, .support-section, .btn-copy, .btn-toggle, .warning-note {
         display: none !important;
     }
-    
     .success-card {
         break-inside: avoid;
         box-shadow: none;
         border: 1px solid #ddd;
     }
-    
     .credential-value {
         color: #000 !important;
     }
-    
     .password-field {
         display: inline !important;
     }
@@ -280,30 +265,22 @@
 
 {% block extra_js %}
 <script>
-// Copy to clipboard function
 function copyToClipboard(text, elementId) {
     navigator.clipboard.writeText(text).then(function() {
-        // Show success notification
         showNotification('Copied to clipboard!', 'success');
-        
-        // Highlight the copied element
         const element = document.getElementById(elementId);
         if (element) {
             element.classList.add('copied');
-            setTimeout(() => {
-                element.classList.remove('copied');
-            }, 500);
+            setTimeout(() => element.classList.remove('copied'), 500);
         }
     }).catch(function(err) {
         showNotification('Failed to copy', 'error');
     });
 }
 
-// Toggle password visibility
 function togglePassword(password) {
     const passwordValue = document.getElementById('password-value');
     const toggleIcon = document.getElementById('password-toggle-icon');
-    
     if (passwordValue.textContent === '••••••••••••') {
         passwordValue.textContent = password;
         toggleIcon.classList.remove('fa-eye');
@@ -315,15 +292,12 @@ function togglePassword(password) {
     }
 }
 
-// Download credentials as text file
 function downloadCredentials() {
     const orderData = document.getElementById('order-data').dataset;
-    
     const content = `
 ==================================
 MELODY STORE - ORDER DETAILS
 ==================================
-
 Order Number: #${orderData.orderNumber}
 Date: ${new Date().toLocaleString()}
 Product: ${orderData.productName}
@@ -332,7 +306,6 @@ Amount Paid: ₦${parseFloat(orderData.amount).toLocaleString()}
 ==================================
 ACCOUNT CREDENTIALS
 ==================================
-
 Email/Username: ${orderData.email}
 Password: ${orderData.password}
 ${orderData.twofa ? `2FA/Backup Code: ${orderData.twofa}` : ''}
@@ -348,76 +321,47 @@ IMPORTANT NOTES
 ==================================
 Thank you for choosing Melody Store!
     `;
-    
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    
     link.setAttribute('href', url);
     link.setAttribute('download', `melody-order-${orderData.orderNumber}.txt`);
     link.style.visibility = 'hidden';
-    
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
     showNotification('Credentials downloaded!', 'success');
 }
 
-// Show notification
 function showNotification(message, type) {
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
-    notification.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-        <span>${message}</span>
-    `;
-    
+    notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i><span>${message}</span>`;
     document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
+    setTimeout(() => notification.remove(), 3000);
 }
 
-// Auto-hide credentials after timeout (optional security feature)
 let timeoutId;
 function startSecurityTimer() {
-    const accountCard = document.getElementById('account-card');
-    
     timeoutId = setTimeout(() => {
-        // Hide all credential values
         document.querySelectorAll('.credential-value').forEach(el => {
             if (el.id !== 'password-value' || el.textContent !== '••••••••••••') {
                 el.textContent = '••••••••••••';
             }
         });
         showNotification('Credentials hidden for security', 'info');
-    }, 300000); // 5 minutes
+    }, 300000);
 }
 
-// Reset timer on user activity
 function resetSecurityTimer() {
-    if (timeoutId) {
-        clearTimeout(timeoutId);
-    }
+    if (timeoutId) clearTimeout(timeoutId);
     startSecurityTimer();
 }
 
-// Initialize page
 document.addEventListener('DOMContentLoaded', function() {
-    // Start security timer
     startSecurityTimer();
-    
-    // Reset timer on user activity
-    ['click', 'mousemove', 'keypress'].forEach(event => {
-        document.addEventListener(event, resetSecurityTimer);
-    });
-    
-    // Track if user has copied credentials
+    ['click', 'mousemove', 'keypress'].forEach(event => document.addEventListener(event, resetSecurityTimer));
     let credentialsCopied = false;
-    
-    // Ask before leaving page
     window.addEventListener('beforeunload', function(e) {
         if (!credentialsCopied) {
             const message = 'Have you saved your account credentials? They won\'t be shown again!';
@@ -425,15 +369,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return message;
         }
     });
-    
-    // Mark as copied when user copies any credential
     document.querySelectorAll('.btn-copy').forEach(btn => {
-        btn.addEventListener('click', function() {
-            credentialsCopied = true;
-        });
+        btn.addEventListener('click', function() { credentialsCopied = true; });
     });
-    
-    // Print shortcut
     document.addEventListener('keydown', function(e) {
         if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
             e.preventDefault();
@@ -442,53 +380,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Add CSS for animations
 const style = document.createElement('style');
 style.textContent = `
-    .credential-box.copied {
-        animation: pulse 0.3s ease;
-        border-color: #10b981;
-    }
-    
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.02); }
-        100% { transform: scale(1); }
-    }
-    
-    .notification {
-        position: fixed;
-        top: 80px;
-        right: 20px;
-        padding: 1rem 1.5rem;
-        border-radius: 0.5rem;
-        background: var(--white);
-        box-shadow: var(--shadow-lg);
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        z-index: 1000;
-        animation: slideIn 0.3s ease;
-    }
-    
-    .notification.info {
-        border-left: 4px solid var(--primary);
-    }
-    
-    .notification.info i {
-        color: var(--primary);
-    }
-    
-    @keyframes slideIn {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
+    .credential-box.copied { animation: pulse 0.3s ease; border-color: #10b981; }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+    .notification { position: fixed; top: 80px; right: 20px; padding: 1rem 1.5rem; border-radius: 0.5rem; background: var(--white); box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 0.75rem; z-index: 1000; animation: slideIn 0.3s ease; }
+    .notification.info { border-left: 4px solid var(--primary); }
+    .notification.info i { color: var(--primary); }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 `;
 document.head.appendChild(style);
 </script>

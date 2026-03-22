@@ -1,0 +1,646 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Melody Store{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-grid">
+        <!-- Left Sidebar - User Info -->
+        <div class="dashboard-sidebar">
+            <div class="user-card">
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <h3>{{ user.name }}</h3>
+                <p>{{ user.email }}</p>
+                <p class="member-since">🎵 Member since {{ user.created_at.strftime('%B %Y') }}</p>
+                <a href="{{ url_for('logout') }}" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+            
+            <div class="stats-card">
+                <h4><i class="fas fa-chart-line"></i> Your Stats</h4>
+                <div class="stat">
+                    <span>📦 Total Orders:</span>
+                    <strong>{{ orders|length }}</strong>
+                </div>
+                <div class="stat">
+                    <span>💰 Total Spent:</span>
+                    <strong>{{ format_currency(orders|sum(attribute='amount')) }}</strong>
+                </div>
+                <div class="stat">
+                    <span>⭐ Member Since:</span>
+                    <strong>{{ user.created_at.strftime('%b %Y') }}</strong>
+                </div>
+            </div>
+            
+            <div class="quick-links">
+                <h4><i class="fas fa-link"></i> Quick Links</h4>
+                <a href="{{ url_for('index') }}" class="quick-link">
+                    <i class="fas fa-home"></i> Shop Now
+                </a>
+                <a href="{{ url_for('my_orders') }}?email={{ user.email }}" class="quick-link">
+                    <i class="fas fa-box"></i> All Orders
+                </a>
+                <a href="{{ url_for('cart') }}" class="quick-link">
+                    <i class="fas fa-shopping-cart"></i> My Cart
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="dashboard-main">
+            <!-- AI Chatbot Section -->
+            <div class="chatbot-card">
+                <div class="chatbot-header">
+                    <i class="fas fa-robot"></i>
+                    <h3>Melody AI Assistant</h3>
+                    <span class="online-dot"></span>
+                    <span class="model-status">Ready</span>
+                </div>
+                
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message bot">
+                        <div class="message-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            <p>Hey {{ user.name }}! 👋 I'm Melody AI, your personal shopping assistant. Ask me anything about our products, orders, or just say hi! 🎵</p>
+                            <small class="message-tip">💡 Try: "What TikTok accounts do you have?" or "How does delivery work?"</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-input-area">
+                    <input type="text" id="chatInput" placeholder="Ask me anything..." class="chat-input">
+                    <button onclick="sendMessage()" class="chat-send">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Recent Orders -->
+            <div class="orders-card">
+                <div class="orders-header">
+                    <h3><i class="fas fa-clock"></i> Recent Orders</h3>
+                    <a href="{{ url_for('my_orders') }}?email={{ user.email }}" class="view-all">View All →</a>
+                </div>
+                
+                {% if orders %}
+                <div class="orders-list">
+                    {% for order in orders[:5] %}
+                    <div class="order-item">
+                        <div class="order-info">
+                            <span class="order-number">#{{ order.order_number }}</span>
+                            <span class="order-product">{{ order.product_name }}</span>
+                        </div>
+                        <div class="order-meta">
+                            <span class="order-amount">{{ format_currency(order.amount) }}</span>
+                            <span class="order-date">{{ order.created_at.strftime('%b %d, %Y') }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-orders">
+                    <i class="fas fa-shopping-bag"></i>
+                    <p>No orders yet</p>
+                    <a href="{{ url_for('index') }}" class="btn-shop">Start Shopping →</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.dashboard-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 2rem;
+}
+
+/* Sidebar */
+.dashboard-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.user-card {
+    background: var(--white);
+    border-radius: 1rem;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+
+.user-avatar i {
+    font-size: 4rem;
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+.user-card h3 {
+    font-size: 1.25rem;
+    color: var(--dark);
+    margin-bottom: 0.25rem;
+}
+
+.user-card p {
+    color: var(--text-light);
+    font-size: 0.875rem;
+}
+
+.member-since {
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    color: var(--text-light);
+}
+
+.btn-logout {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background: var(--light);
+    color: var(--text);
+    text-decoration: none;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.btn-logout:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.stats-card, .quick-links {
+    background: var(--white);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
+.stats-card h4, .quick-links h4 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--gray);
+}
+
+.stat:last-child {
+    border-bottom: none;
+}
+
+.quick-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    color: var(--text);
+    text-decoration: none;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+.quick-link:hover {
+    background: var(--light);
+    color: var(--primary);
+    transform: translateX(5px);
+}
+
+/* Chatbot */
+.chatbot-card {
+    background: var(--white);
+    border-radius: 1rem;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.chatbot-header {
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.chatbot-header i {
+    font-size: 1.25rem;
+}
+
+.chatbot-header h3 {
+    font-size: 1rem;
+    margin: 0;
+    flex: 1;
+}
+
+.online-dot {
+    width: 10px;
+    height: 10px;
+    background: #10b981;
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+}
+
+.model-status {
+    font-size: 0.7rem;
+    background: rgba(255,255,255,0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+.chat-messages {
+    height: 400px;
+    overflow-y: auto;
+    padding: 1rem;
+    background: var(--light);
+}
+
+.message {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.message.user {
+    flex-direction: row-reverse;
+}
+
+.message-avatar {
+    width: 36px;
+    height: 36px;
+    background: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.message.user .message-avatar {
+    background: var(--primary);
+    color: white;
+}
+
+.message-content {
+    max-width: 70%;
+    background: var(--white);
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.message.user .message-content {
+    background: var(--primary);
+    color: white;
+}
+
+.message-tip {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.7rem;
+    color: var(--text-light);
+}
+
+.typing-dots {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.typing-dots span:not(.typing-text) {
+    width: 8px;
+    height: 8px;
+    background: var(--primary);
+    border-radius: 50%;
+    animation: typing 1.4s infinite;
+}
+
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+.typing-text {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    margin-left: 4px;
+}
+
+@keyframes typing {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-8px); opacity: 1; }
+}
+
+.model-badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    padding: 0.2rem 0.6rem;
+    background: var(--light);
+    border-radius: 1rem;
+    margin-top: 0.5rem;
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.chat-input-area {
+    display: flex;
+    padding: 1rem;
+    border-top: 1px solid var(--gray);
+    gap: 0.5rem;
+}
+
+.chat-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--gray);
+    border-radius: 2rem;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.chat-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.chat-send {
+    width: 44px;
+    height: 44px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.chat-send:hover {
+    background: var(--primary-dark);
+    transform: scale(1.05);
+}
+
+/* Orders */
+.orders-card {
+    background: var(--white);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
+.orders-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--light);
+}
+
+.orders-header h3 {
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.view-all {
+    font-size: 0.75rem;
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--gray);
+}
+
+.order-item:last-child {
+    border-bottom: none;
+}
+
+.order-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.order-number {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--dark);
+}
+
+.order-product {
+    font-size: 0.75rem;
+    color: var(--text-light);
+}
+
+.order-meta {
+    text-align: right;
+}
+
+.order-amount {
+    font-weight: 600;
+    color: var(--primary);
+    font-size: 0.875rem;
+    display: block;
+}
+
+.order-date {
+    font-size: 0.7rem;
+    color: var(--text-light);
+}
+
+.empty-orders {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-light);
+}
+
+.empty-orders i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.btn-shop {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background: var(--primary);
+    color: white;
+    text-decoration: none;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .chat-messages {
+        height: 350px;
+    }
+    
+    .message-content {
+        max-width: 85%;
+    }
+    
+    .order-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .order-meta {
+        text-align: left;
+    }
+}
+</style>
+
+<script>
+function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    addMessage(message, 'user');
+    input.value = '';
+    showTyping();
+    
+    fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: message })
+    })
+    .then(response => response.json())
+    .then(data => {
+        removeTyping();
+        if (data.reply) {
+            addMessage(data.reply, 'bot', data.model);
+        } else {
+            addMessage("Sorry, I'm having trouble responding right now. Please try again! 🙏", 'bot');
+        }
+    })
+    .catch(error => {
+        console.error('Chat error:', error);
+        removeTyping();
+        addMessage("Network error. Please check your connection and try again! 🔌", 'bot');
+    });
+}
+
+function addMessage(text, sender, model = null) {
+    const messagesDiv = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}`;
+    
+    let modelBadge = '';
+    if (model && sender === 'bot') {
+        const modelNames = {
+            'llama-3.3-70b-versatile': '🦙 Llama 3.3',
+            'llama-3.1-8b-instant': '⚡ Llama 3.1',
+            'mixtral-8x7b-32768': '🔮 Mixtral',
+            'gemma2-9b-it': '🌸 Gemma 2',
+            'llama-3.2-3b-preview': '🪶 Llama 3.2'
+        };
+        const displayName = modelNames[model] || model.split('-')[0];
+        modelBadge = `<span class="model-badge">${displayName}</span>`;
+    }
+    
+    messageDiv.innerHTML = `
+        <div class="message-avatar">
+            <i class="fas fa-${sender === 'user' ? 'user' : 'robot'}"></i>
+        </div>
+        <div class="message-content">
+            <p>${escapeHtml(text)}</p>
+            ${modelBadge}
+        </div>
+    `;
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function showTyping() {
+    const messagesDiv = document.getElementById('chatMessages');
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'message bot';
+    typingDiv.id = 'typingIndicator';
+    typingDiv.innerHTML = `
+        <div class="message-avatar">
+            <i class="fas fa-robot"></i>
+        </div>
+        <div class="message-content">
+            <div class="typing-dots">
+                <span></span><span></span><span></span>
+                <span class="typing-text">Thinking...</span>
+            </div>
+        </div>
+    `;
+    messagesDiv.appendChild(typingDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function removeTyping() {
+    const typing = document.getElementById('typingIndicator');
+    if (typing) typing.remove();
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Enter key to send
+document.getElementById('chatInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+});
+
+// Auto-scroll to bottom on load
+document.addEventListener('DOMContentLoaded', function() {
+    const messagesDiv = document.getElementById('chatMessages');
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+});
+</script>
+{% endblock %}
