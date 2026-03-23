@@ -1,310 +1,174 @@
 {% extends "base.html" %}
 
-{% block title %}404 • Page Not Found • Melody Store{% endblock %}
-
-{% block extra_css %}
-<style>
-    .error-404 {
-        min-height: 70vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        overflow: hidden;
-        background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(124, 58, 237, 0.05));
-    }
-
-    .error-container {
-        text-align: center;
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 2rem;
-        position: relative;
-        z-index: 2;
-    }
-
-    .glitch-number {
-        font-size: 8rem;
-        font-weight: 800;
-        color: var(--primary);
-        text-shadow: 2px 2px 0 #ff00ff, -2px -2px 0 #00ffff;
-        animation: glitch 3s infinite;
-        margin-bottom: 1rem;
-    }
-
-    @keyframes glitch {
-        0%, 100% { transform: skew(0deg, 0deg); text-shadow: 2px 2px 0 #ff00ff, -2px -2px 0 #00ffff; }
-        95% { transform: skew(0deg, 0deg); text-shadow: 2px 2px 0 #ff00ff, -2px -2px 0 #00ffff; }
-        96% { transform: skew(2deg, 1deg); text-shadow: 4px 4px 0 #ff00ff, -4px -4px 0 #00ffff; }
-        97% { transform: skew(-2deg, -1deg); text-shadow: -4px -4px 0 #ff00ff, 4px 4px 0 #00ffff; }
-        98% { transform: skew(0deg, 0deg); text-shadow: 2px 2px 0 #ff00ff, -2px -2px 0 #00ffff; }
-    }
-
-    .error-title {
-        font-size: 1.8rem;
-        color: var(--dark);
-        margin-bottom: 1rem;
-    }
-
-    .error-divider {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
-        margin: 1.5rem 0;
-    }
-
-    .error-divider .line {
-        width: 60px;
-        height: 2px;
-        background: var(--gray);
-    }
-
-    .error-divider i {
-        font-size: 1.5rem;
-        color: var(--primary);
-    }
-
-    .error-text {
-        color: var(--text);
-        font-size: 1.1rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .error-subtext {
-        color: var(--text-light);
-        font-size: 0.95rem;
-        margin-bottom: 2rem;
-    }
-
-    /* Help Section */
-    .help-section {
-        background: var(--white);
-        border-radius: 1rem;
-        padding: 2rem;
-        margin: 2rem 0;
-        box-shadow: var(--shadow);
-    }
-
-    .help-title {
-        font-size: 1.2rem;
-        color: var(--dark);
-        margin-bottom: 1.5rem;
-    }
-
-    .help-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 1rem;
-    }
-
-    .help-card {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 1rem;
-        background: var(--light);
-        border-radius: 0.75rem;
-        text-decoration: none;
-        color: var(--text);
-        transition: all 0.2s;
-    }
-
-    .help-card:hover {
-        background: var(--primary);
-        color: white;
-        transform: translateY(-3px);
-    }
-
-    .help-card i {
-        font-size: 1.5rem;
-    }
-
-    .help-card span {
-        font-size: 0.8rem;
-        font-weight: 500;
-    }
-
-    /* Search Bar */
-    .search-section {
-        margin: 2rem 0;
-    }
-
-    .search-form {
-        display: flex;
-        gap: 0.5rem;
-        max-width: 500px;
-        margin: 0 auto;
-    }
-
-    .search-input {
-        flex: 1;
-        padding: 0.875rem 1rem;
-        border: 2px solid var(--gray);
-        border-radius: 0.5rem;
-        font-size: 1rem;
-        transition: all 0.2s;
-    }
-
-    .search-input:focus {
-        outline: none;
-        border-color: var(--primary);
-    }
-
-    .search-btn {
-        padding: 0.875rem 1.5rem;
-        background: var(--primary);
-        color: white;
-        border: none;
-        border-radius: 0.5rem;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .search-btn:hover {
-        background: var(--primary-dark);
-    }
-
-    /* Fun Fact */
-    .fun-fact {
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        border-radius: 1rem;
-        padding: 1.5rem;
-        color: white;
-        margin-top: 2rem;
-    }
-
-    .fact-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        background: rgba(255,255,255,0.2);
-        padding: 0.5rem 1rem;
-        border-radius: 2rem;
-        font-size: 0.8rem;
-        margin-bottom: 1rem;
-    }
-
-    .fact-text {
-        font-size: 0.9rem;
-        opacity: 0.9;
-        line-height: 1.5;
-    }
-
-    @media (max-width: 768px) {
-        .glitch-number {
-            font-size: 5rem;
-        }
-        .error-title {
-            font-size: 1.4rem;
-        }
-        .help-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
-        .search-form {
-            flex-direction: column;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .help-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-</style>
-{% endblock %}
+{% block title %}Page Not Found - Melody Store{% endblock %}
 
 {% block content %}
-<div class="error-404">
-    <div class="error-container">
-        <!-- Glitch 404 -->
-        <div class="glitch-number" data-text="404">404</div>
-
-        <!-- Error Message -->
-        <div class="error-message">
-            <h2 class="error-title">Page Not Found</h2>
-            <div class="error-divider">
-                <span class="line"></span>
-                <i class="fas fa-music"></i>
-                <span class="line"></span>
-            </div>
-            <p class="error-text">The page you're looking for seems to have skipped a beat.</p>
-            <p class="error-subtext">Maybe it was deleted, moved, or never existed. But don't worry — the melody continues!</p>
+<div class="error-container">
+    <div class="error-card">
+        <div class="error-icon">
+            <i class="fas fa-search"></i>
         </div>
-
-        <!-- Helpful Links -->
-        <div class="help-section">
-            <h3 class="help-title">🎵 Maybe you're looking for one of these:</h3>
-            <div class="help-grid">
-                <a href="{{ url_for('index') }}" class="help-card">
-                    <i class="fas fa-home"></i>
-                    <span>Home</span>
-                </a>
-                <a href="{{ url_for('category_view', slug='facebook') }}" class="help-card">
-                    <i class="fab fa-facebook"></i>
-                    <span>Facebook</span>
-                </a>
-                <a href="{{ url_for('category_view', slug='instagram') }}" class="help-card">
-                    <i class="fab fa-instagram"></i>
-                    <span>Instagram</span>
-                </a>
-                <a href="{{ url_for('category_view', slug='tiktok') }}" class="help-card">
-                    <i class="fab fa-tiktok"></i>
-                    <span>TikTok</span>
-                </a>
-                <a href="{{ url_for('category_view', slug='twitter') }}" class="help-card">
-                    <i class="fab fa-twitter"></i>
-                    <span>Twitter</span>
-                </a>
-                <a href="{{ url_for('category_view', slug='vpn') }}" class="help-card">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>VPN</span>
-                </a>
-                <a href="{{ url_for('my_orders') }}" class="help-card">
-                    <i class="fas fa-box"></i>
-                    <span>My Orders</span>
-                </a>
-                <a href="{{ url_for('cart') }}" class="help-card">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span>Cart</span>
-                </a>
-                <a href="#" class="help-card">
-                    <i class="fas fa-headset"></i>
-                    <span>Support</span>
-                </a>
+        <h1 class="error-code">404</h1>
+        <h2 class="error-title">Page Not Found</h2>
+        <p class="error-message">The page you're looking for doesn't exist or has been moved.</p>
+        
+        <div class="error-help">
+            <p>You might want to try one of these:</p>
+            <div class="help-links">
+                <a href="{{ url_for('index') }}" class="help-link">Home</a>
+                <a href="{{ url_for('category_view', slug='facebook') }}" class="help-link">Facebook</a>
+                <a href="{{ url_for('category_view', slug='instagram') }}" class="help-link">Instagram</a>
+                <a href="{{ url_for('category_view', slug='tiktok') }}" class="help-link">TikTok</a>
+                <a href="{{ url_for('category_view', slug='twitter') }}" class="help-link">Twitter</a>
+                <a href="{{ url_for('my_orders') }}" class="help-link">My Orders</a>
             </div>
         </div>
-
-        <!-- Search Bar -->
-        <div class="search-section">
-            <form action="{{ url_for('api_search') }}" method="GET" class="search-form" onsubmit="return searchProducts(event)">
-                <input type="text" name="q" class="search-input" placeholder="Search products..." id="searchInput">
-                <button type="submit" class="search-btn">
-                    <i class="fas fa-search"></i>
-                </button>
-            </form>
+        
+        <div class="error-actions">
+            <a href="{{ url_for('index') }}" class="btn-primary">Return Home</a>
+            <a href="mailto:melodyakatalentc48@gmail.com" class="btn-secondary">Contact Support</a>
         </div>
-
-        <!-- Fun Fact -->
-        <div class="fun-fact">
-            <div class="fact-badge">
-                <i class="fas fa-lightbulb"></i>
-                <span>Did You Know?</span>
-            </div>
-            <p class="fact-text">The 404 error code was named after room 404 at CERN, where the World Wide Web was born. Even the best URLs hit a wrong note sometimes!</p>
+        
+        <div class="error-contact">
+            <p>If you believe this is a mistake, please contact us at <strong>melodyakatalentc48@gmail.com</strong></p>
         </div>
     </div>
 </div>
 
-<script>
-function searchProducts(event) {
-    event.preventDefault();
-    const query = document.getElementById('searchInput').value.trim();
-    if (query) {
-        window.location.href = "{{ url_for('index') }}?search=" + encodeURIComponent(query);
-    }
-    return false;
+<style>
+.error-container {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
 }
-</script>
+
+.error-card {
+    max-width: 500px;
+    width: 100%;
+    background: var(--white);
+    border-radius: 1rem;
+    padding: 2.5rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+
+.error-icon {
+    font-size: 4rem;
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+.error-code {
+    font-size: 5rem;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 0.5rem;
+}
+
+.error-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 1rem;
+}
+
+.error-message {
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+}
+
+.error-help {
+    margin-bottom: 1.5rem;
+}
+
+.error-help p {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--dark);
+}
+
+.help-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.help-link {
+    padding: 0.5rem 1rem;
+    background: var(--light);
+    border-radius: 2rem;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 0.875rem;
+    transition: background 0.2s;
+}
+
+.help-link:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.error-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+.btn-secondary {
+    background: var(--light);
+    color: var(--text);
+    border: 1px solid var(--gray);
+}
+
+.btn-secondary:hover {
+    background: var(--gray);
+}
+
+.error-contact {
+    border-top: 1px solid var(--gray);
+    padding-top: 1rem;
+    font-size: 0.75rem;
+    color: var(--text-light);
+}
+
+.error-contact strong {
+    color: var(--dark);
+}
+
+@media (max-width: 768px) {
+    .error-card {
+        padding: 1.5rem;
+    }
+    .error-actions {
+        flex-direction: column;
+    }
+    .btn-primary, .btn-secondary {
+        text-align: center;
+    }
+    .help-links {
+        gap: 0.5rem;
+    }
+}
+</style>
 {% endblock %}

@@ -296,14 +296,50 @@
 </style>
 
 <script>
-// Product data mapping with CORRECT IDs (8-13)
+// Product data mapping with ACTUAL IDs (16-44)
 const productData = {
-    8: { name: 'Canada TikTok Account', price: 3500, icon: 'tiktok-logo.png' },
-    9: { name: 'USA Instagram Account', price: 13000, icon: 'instagram-logo.png' },
-    10: { name: 'Twitter Account 200 followers', price: 7000, icon: 'twitter-logo.png' },
-    11: { name: 'NordVPN Account', price: 4000, icon: 'vpn-logo.png' },
-    12: { name: 'Google Voice Number', price: 6500, icon: 'texting-logo.png' },
-    13: { name: 'USA Facebook Account', price: 5000, icon: 'facebook-logo.png' }
+    // TikTok (IDs 16, 17, 18)
+    16: { name: 'Canada TikTok Account', price: 3500, icon: 'tiktok-logo.png' },
+    17: { name: 'UK TikTok Account', price: 3500, icon: 'tiktok-logo.png' },
+    18: { name: 'Germany TikTok Account', price: 3500, icon: 'tiktok-logo.png' },
+    
+    // Instagram (IDs 19, 20, 21)
+    19: { name: 'USA Instagram 2000+ Followers', price: 13000, icon: 'instagram-logo.png' },
+    20: { name: 'USA Instagram 1000+ Followers', price: 7000, icon: 'instagram-logo.png' },
+    21: { name: 'USA Instagram with Posts', price: 3000, icon: 'instagram-logo.png' },
+    
+    // Twitter (IDs 22, 23, 24, 25)
+    22: { name: 'Twitter Account 0-30 Followers', price: 2500, icon: 'twitter-logo.png' },
+    23: { name: 'Twitter Account 30 Followers', price: 3500, icon: 'twitter-logo.png' },
+    24: { name: 'Twitter Account 100 Followers', price: 5000, icon: 'twitter-logo.png' },
+    25: { name: 'Twitter Account 200 Followers', price: 7000, icon: 'twitter-logo.png' },
+    
+    // Facebook (IDs 26-32)
+    26: { name: 'Facebook New Account', price: 2300, icon: 'facebook-logo.png' },
+    27: { name: 'Random Country Facebook', price: 3000, icon: 'facebook-logo.png' },
+    28: { name: 'Indonesia Facebook', price: 6000, icon: 'facebook-logo.png' },
+    29: { name: 'Japan Facebook', price: 4000, icon: 'facebook-logo.png' },
+    30: { name: 'USA Facebook', price: 5000, icon: 'facebook-logo.png' },
+    31: { name: 'Germany Facebook', price: 4500, icon: 'facebook-logo.png' },
+    32: { name: 'Nigeria Facebook', price: 4500, icon: 'facebook-logo.png' },
+    
+    // VPN (IDs 33-38)
+    33: { name: 'NordVPN Premium', price: 4000, icon: 'vpn-logo.png' },
+    34: { name: 'ExpressVPN Premium', price: 4000, icon: 'vpn-logo.png' },
+    35: { name: 'PIA VPN Premium', price: 4000, icon: 'vpn-logo.png' },
+    36: { name: 'HMA VPN Premium', price: 4000, icon: 'vpn-logo.png' },
+    37: { name: 'IP Vanish VPN Premium', price: 4000, icon: 'vpn-logo.png' },
+    38: { name: 'Surfshark VPN Premium', price: 4000, icon: 'vpn-logo.png' },
+    
+    // Texting Apps (IDs 39-42)
+    39: { name: 'TextPlus Account', price: 3000, icon: 'texting-logo.png' },
+    40: { name: 'NextPlus Account', price: 3000, icon: 'texting-logo.png' },
+    41: { name: 'Talkatone Account', price: 3000, icon: 'texting-logo.png' },
+    42: { name: 'Google Voice Account', price: 6500, icon: 'texting-logo.png' },
+    
+    // Other (IDs 43-44)
+    43: { name: 'USA iCloud Account', price: 4000, icon: 'other-logo.png' },
+    44: { name: 'Apple Music E-Code', price: 2000, icon: 'other-logo.png' }
 };
 
 // Format currency

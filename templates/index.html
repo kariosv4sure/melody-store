@@ -307,6 +307,74 @@
                 </div>
             </div>
         </div>
+
+        <!-- Google Voice (NEW) -->
+        <div class="product-card">
+            <div class="product-image">
+                <img src="{{ url_for('static', filename='logos/texting-logo.png') }}"
+                     alt="Google Voice">
+                <span class="product-badge">Best Seller</span>
+            </div>
+            <div class="product-content">
+                <h3 class="product-title">Google Voice Number</h3>
+                <p class="product-description">
+                    USA number, verified, works with all services
+                </p>
+                <div class="product-price">
+                    <span class="price">₦6,500</span>
+                </div>
+                <div class="product-meta">
+                    <span class="stock in-stock">
+                        <i class="fas fa-check-circle"></i> In Stock
+                    </span>
+                    <span class="rating">
+                        <i class="fas fa-star"></i> 4.9
+                    </span>
+                </div>
+                <div class="product-actions">
+                    <a href="{{ url_for('product_view', product_id=42) }}" class="btn-view">
+                        View Details <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <button class="btn-add-cart" onclick="addToCart(42)">
+                        <i class="fas fa-shopping-cart"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- USA Facebook (NEW) -->
+        <div class="product-card">
+            <div class="product-image">
+                <img src="{{ url_for('static', filename='logos/facebook-logo.png') }}"
+                     alt="USA Facebook">
+                <span class="product-badge">Hot</span>
+            </div>
+            <div class="product-content">
+                <h3 class="product-title">USA Facebook Account</h3>
+                <p class="product-description">
+                    30+ friends, marketplace enabled, create profile/page
+                </p>
+                <div class="product-price">
+                    <span class="price">₦5,000</span>
+                </div>
+                <div class="product-meta">
+                    <span class="stock in-stock">
+                        <i class="fas fa-check-circle"></i> In Stock
+                    </span>
+                    <span class="rating">
+                        <i class="fas fa-star"></i> 4.5
+                    </span>
+                </div>
+                <div class="product-actions">
+                    <a href="{{ url_for('product_view', product_id=30) }}" class="btn-view">
+                        View Details <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <button class="btn-add-cart" onclick="addToCart(30)">
+                        <i class="fas fa-shopping-cart"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="section-footer">

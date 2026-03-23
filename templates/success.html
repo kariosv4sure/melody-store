@@ -29,11 +29,11 @@
         <div class="order-info">
             <div class="order-info-row">
                 <span class="info-label">Order Number:</span>
-                <span class="info-value order-number">#{{ order.order_number or order.get('order_number') }}</span>
+                <span class="info-value order-number">#{{ order.order_number }}</span>
             </div>
             <div class="order-info-row">
                 <span class="info-label">Order Date:</span>
-                <span class="info-value">{{ order.created_at.strftime('%B %d, %Y at %I:%M %p') if order.created_at else (order.get('created_at') or 'Just now') }}</span>
+                <span class="info-value">{{ order.created_at.strftime('%B %d, %Y at %I:%M %p') if order.created_at else 'Just now' }}</span>
             </div>
             <div class="order-info-row">
                 <span class="info-label">Payment Method:</span>
@@ -49,14 +49,14 @@
             <h3>Product Summary</h3>
             <div class="summary-item">
                 <div class="summary-item-info">
-                    <span class="item-name">{{ order.product_name or order.get('product_name') }}</span>
+                    <span class="item-name">{{ order.product_name }}</span>
                     <span class="item-quantity">x1</span>
                 </div>
-                <span class="item-price">{{ format_currency(order.amount|float if order.amount else order.get('amount')|float) }}</span>
+                <span class="item-price">{{ format_currency(order.amount|float) }}</span>
             </div>
             <div class="summary-total">
                 <span>Total Paid:</span>
-                <span class="total-amount">{{ format_currency(order.amount|float if order.amount else order.get('amount')|float) }}</span>
+                <span class="total-amount">{{ format_currency(order.amount|float) }}</span>
             </div>
         </div>
     </div>
@@ -70,14 +70,19 @@
             <h2>Your Account Credentials</h2>
         </div>
 
-        <div class="alert alert-success">
-            <i class="fas fa-envelope"></i>
-            <p>We've also sent these details to your email. Please save them now!</p>
+        <!-- BIG VISIBLE WARNING -->
+        <div class="critical-warning">
+            <div class="critical-warning-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="critical-warning-content">
+                <h3>⚠️ IMPORTANT: SAVE THESE NOW! ⚠️</h3>
+                <p><strong>YOU WILL NEVER SEE THIS PASSWORD AGAIN!</strong> This is the ONLY time these credentials will be displayed.</p>
+                <p class="critical-warning-highlight">Copy your password NOW or download it. If you lose it, you will need to purchase a new account.</p>
+            </div>
         </div>
 
         <div class="credentials-container">
-            {% set account = order.account if order.account else order.get('account', {}) %}
-            
             <!-- Email/Username -->
             <div class="credential-group">
                 <label class="credential-label">
@@ -85,46 +90,46 @@
                     Email / Username
                 </label>
                 <div class="credential-box" id="email-credential">
-                    <span class="credential-value">{{ account.email or account.get('email') }}</span>
-                    <button class="btn-copy" onclick="copyToClipboard('{{ account.email or account.get('email') }}', 'email-credential')">
+                    <span class="credential-value">{{ order.account_email }}</span>
+                    <button class="btn-copy" onclick="copyToClipboard('{{ order.account_email }}', 'email-credential')">
                         <i class="far fa-copy"></i>
                         <span>Copy</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Password -->
-            <div class="credential-group">
+            <!-- Password - HIGHLIGHTED -->
+            <div class="credential-group password-highlight">
                 <label class="credential-label">
                     <i class="fas fa-lock"></i>
-                    Password
+                    🔐 PASSWORD (SAVE THIS NOW!) 🔐
                 </label>
-                <div class="credential-box" id="password-credential">
+                <div class="credential-box password-box" id="password-credential">
                     <span class="credential-value password-field" id="password-value">
                         ••••••••••••
                     </span>
                     <div class="credential-actions">
-                        <button class="btn-toggle" onclick="togglePassword('{{ account.password or account.get('password') }}')">
+                        <button class="btn-toggle" onclick="togglePassword('{{ order.account_password }}')">
                             <i class="far fa-eye" id="password-toggle-icon"></i>
                         </button>
-                        <button class="btn-copy" onclick="copyToClipboard('{{ account.password or account.get('password') }}', 'password-credential')">
+                        <button class="btn-copy btn-copy-highlight" onclick="copyToClipboard('{{ order.account_password }}', 'password-credential')">
                             <i class="far fa-copy"></i>
-                            <span>Copy</span>
+                            <span>Copy Password</span>
                         </button>
                     </div>
                 </div>
             </div>
 
             <!-- 2FA Code (if available) -->
-            {% if account.two_fa or account.get('two_fa') %}
+            {% if order.account_2fa %}
             <div class="credential-group">
                 <label class="credential-label">
                     <i class="fas fa-shield-alt"></i>
                     2FA / Backup Code
                 </label>
                 <div class="credential-box" id="2fa-credential">
-                    <span class="credential-value">{{ account.two_fa or account.get('two_fa') }}</span>
-                    <button class="btn-copy" onclick="copyToClipboard('{{ account.two_fa or account.get('two_fa') }}', '2fa-credential')">
+                    <span class="credential-value">{{ order.account_2fa }}</span>
+                    <button class="btn-copy" onclick="copyToClipboard('{{ order.account_2fa }}', '2fa-credential')">
                         <i class="far fa-copy"></i>
                         <span>Copy</span>
                     </button>
@@ -133,22 +138,40 @@
             {% endif %}
 
             <!-- Additional Notes (if available) -->
-            {% if account.notes or account.get('notes') %}
+            {% if order.account_notes %}
             <div class="credential-group">
                 <label class="credential-label">
                     <i class="fas fa-sticky-note"></i>
                     Additional Information
                 </label>
                 <div class="notes-box">
-                    <p>{{ account.notes or account.get('notes') }}</p>
+                    <p>{{ order.account_notes }}</p>
                 </div>
             </div>
             {% endif %}
         </div>
 
+        <!-- BIG RED WARNING AT BOTTOM -->
+        <div class="final-warning">
+            <div class="final-warning-content">
+                <i class="fas fa-skull"></i>
+                <span><strong>⚠️ WARNING: ONE-TIME DISPLAY ⚠️</strong></span>
+                <i class="fas fa-skull"></i>
+            </div>
+            <p>These credentials will NOT be shown again. If you leave this page without saving, you will permanently lose access to your account.</p>
+            <div class="save-actions">
+                <button class="btn-copy-all" onclick="copyAllCredentials()">
+                    <i class="fas fa-copy"></i> COPY ALL CREDENTIALS
+                </button>
+                <button class="btn-download-urgent" onclick="downloadCredentials()">
+                    <i class="fas fa-download"></i> DOWNLOAD NOW
+                </button>
+            </div>
+        </div>
+
         <div class="warning-note">
             <i class="fas fa-exclamation-triangle"></i>
-            <p><strong>Important:</strong> These credentials will only be shown once. Please save them securely. We recommend changing the password immediately after login.</p>
+            <p><strong>Important:</strong> We recommend changing the password immediately after login for security. But first, SAVE THESE CREDENTIALS!</p>
         </div>
     </div>
 
@@ -162,11 +185,11 @@
         </div>
 
         <div class="steps-grid">
-            <div class="step-item">
-                <div class="step-number">1</div>
+            <div class="step-item urgent-step">
+                <div class="step-number urgent">1</div>
                 <div class="step-content">
-                    <h4>Save Your Credentials</h4>
-                    <p>Copy and save your login details in a secure place</p>
+                    <h4>⚠️ SAVE YOUR PASSWORD NOW ⚠️</h4>
+                    <p>Copy or download your password immediately. You won't see it again!</p>
                 </div>
             </div>
             <div class="step-item">
@@ -199,11 +222,10 @@
             <i class="fas fa-print"></i>
             Print Details
         </button>
-        <button class="btn-download" onclick="downloadCredentials()">
-            <i class="fas fa-download"></i>
-            Download as Text
+        <button class="btn-download-urgent" onclick="downloadCredentials()">
+            <i class="fas fa-download"></i> Download as Text
         </button>
-        <a href="{{ url_for('my_orders') }}?email={{ order.customer_email or order.get('customer_email') }}" class="btn-orders">
+        <a href="{{ url_for('my_orders') }}?email={{ order.customer_email }}" class="btn-orders">
             <i class="fas fa-box"></i>
             View My Orders
         </a>
@@ -231,13 +253,13 @@
 
 <!-- Hidden data for download -->
 <div id="order-data"
-     data-order-number="{{ order.order_number or order.get('order_number') }}"
-     data-product-name="{{ order.product_name or order.get('product_name') }}"
-     data-amount="{{ order.amount or order.get('amount') }}"
-     data-email="{{ order.account.email if order.account else order.get('account', {}).get('email') }}"
-     data-password="{{ order.account.password if order.account else order.get('account', {}).get('password') }}"
-     data-twofa="{{ order.account.two_fa if order.account else order.get('account', {}).get('two_fa') or '' }}"
-     data-notes="{{ order.account.notes if order.account else order.get('account', {}).get('notes') or '' }}">
+     data-order-number="{{ order.order_number }}"
+     data-product-name="{{ order.product_name }}"
+     data-amount="{{ order.amount }}"
+     data-email="{{ order.account_email }}"
+     data-password="{{ order.account_password }}"
+     data-twofa="{{ order.account_2fa or '' }}"
+     data-notes="{{ order.account_notes or '' }}">
 </div>
 
 <!-- Print-friendly stylesheet -->
@@ -246,7 +268,7 @@
         size: A4;
         margin: 1cm;
     }
-    .navbar, .footer, .success-header, .success-actions, .support-section, .btn-copy, .btn-toggle, .warning-note {
+    .navbar, .footer, .success-header, .success-actions, .support-section, .btn-copy, .btn-toggle, .warning-note, .critical-warning, .final-warning {
         display: none !important;
     }
     .success-card {
@@ -265,13 +287,24 @@
 
 {% block extra_js %}
 <script>
+function copyAllCredentials() {
+    const orderData = document.getElementById('order-data').dataset;
+    let all = `Email: ${orderData.email}\nPassword: ${orderData.password}`;
+    if (orderData.twofa) all += `\n2FA: ${orderData.twofa}`;
+    if (orderData.notes) all += `\nNotes: ${orderData.notes}`;
+    copyToClipboard(all, null);
+    showNotification('All credentials copied! SAVE THEM NOW!', 'success');
+}
+
 function copyToClipboard(text, elementId) {
     navigator.clipboard.writeText(text).then(function() {
-        showNotification('Copied to clipboard!', 'success');
-        const element = document.getElementById(elementId);
-        if (element) {
-            element.classList.add('copied');
-            setTimeout(() => element.classList.remove('copied'), 500);
+        showNotification('✅ Copied! SAVE THIS NOW!', 'success');
+        if (elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.classList.add('copied');
+                setTimeout(() => element.classList.remove('copied'), 500);
+            }
         }
     }).catch(function(err) {
         showNotification('Failed to copy', 'error');
@@ -295,7 +328,11 @@ function togglePassword(password) {
 function downloadCredentials() {
     const orderData = document.getElementById('order-data').dataset;
     const content = `
-==================================
+╔══════════════════════════════════════════════════════════════╗
+║                    ⚠️  SAVE THIS NOW!  ⚠️                    ║
+║         THIS IS THE ONLY TIME YOU'LL SEE THESE              ║
+╚══════════════════════════════════════════════════════════════╝
+
 MELODY STORE - ORDER DETAILS
 ==================================
 Order Number: #${orderData.orderNumber}
@@ -304,7 +341,7 @@ Product: ${orderData.productName}
 Amount Paid: ₦${parseFloat(orderData.amount).toLocaleString()}
 
 ==================================
-ACCOUNT CREDENTIALS
+🔐 ACCOUNT CREDENTIALS (SAVE NOW!) 🔐
 ==================================
 Email/Username: ${orderData.email}
 Password: ${orderData.password}
@@ -312,11 +349,12 @@ ${orderData.twofa ? `2FA/Backup Code: ${orderData.twofa}` : ''}
 ${orderData.notes ? `\nAdditional Information:\n${orderData.notes}` : ''}
 
 ==================================
-IMPORTANT NOTES
+⚠️  IMPORTANT - READ THIS! ⚠️
 ==================================
-• Change your password immediately after login
-• Save these credentials in a secure location
-• Contact support if you experience any issues
+• YOU WILL NOT SEE THIS PASSWORD AGAIN!
+• Save these credentials immediately
+• Change your password after login
+• Contact support if you have issues
 
 ==================================
 Thank you for choosing Melody Store!
@@ -330,7 +368,7 @@ Thank you for choosing Melody Store!
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showNotification('Credentials downloaded!', 'success');
+    showNotification('✅ Credentials downloaded! SAVE THE FILE!', 'success');
 }
 
 function showNotification(message, type) {
@@ -349,7 +387,7 @@ function startSecurityTimer() {
                 el.textContent = '••••••••••••';
             }
         });
-        showNotification('Credentials hidden for security', 'info');
+        showNotification('⚠️ Credentials hidden for security', 'info');
     }, 300000);
 }
 
@@ -364,12 +402,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let credentialsCopied = false;
     window.addEventListener('beforeunload', function(e) {
         if (!credentialsCopied) {
-            const message = 'Have you saved your account credentials? They won\'t be shown again!';
+            const message = '⚠️ HAVE YOU SAVED YOUR PASSWORD? You won\'t see it again!';
             e.returnValue = message;
             return message;
         }
     });
-    document.querySelectorAll('.btn-copy').forEach(btn => {
+    document.querySelectorAll('.btn-copy, .btn-copy-all, .btn-download-urgent').forEach(btn => {
         btn.addEventListener('click', function() { credentialsCopied = true; });
     });
     document.addEventListener('keydown', function(e) {
@@ -388,6 +426,114 @@ style.textContent = `
     .notification.info { border-left: 4px solid var(--primary); }
     .notification.info i { color: var(--primary); }
     @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    
+    .critical-warning {
+        background: #fee2e2;
+        border: 3px solid #ef4444;
+        border-radius: 1rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        animation: pulse-border 1s infinite;
+    }
+    @keyframes pulse-border {
+        0% { border-color: #ef4444; }
+        50% { border-color: #ff8888; }
+        100% { border-color: #ef4444; }
+    }
+    .critical-warning-icon {
+        font-size: 2rem;
+        color: #ef4444;
+    }
+    .critical-warning-content h3 {
+        color: #991b1b;
+        margin: 0 0 0.25rem 0;
+        font-size: 1rem;
+    }
+    .critical-warning-content p {
+        margin: 0;
+        font-size: 0.875rem;
+        color: #991b1b;
+    }
+    .critical-warning-highlight {
+        font-weight: bold;
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
+    }
+    .password-highlight .credential-label {
+        color: #ef4444;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+    .password-box {
+        background: #fff3cd;
+        border-color: #f59e0b;
+    }
+    .btn-copy-highlight {
+        background: #f59e0b;
+        color: white;
+    }
+    .btn-copy-highlight:hover {
+        background: #d97706;
+    }
+    .final-warning {
+        background: #fff3cd;
+        border: 3px solid #f59e0b;
+        border-radius: 1rem;
+        padding: 1rem;
+        margin: 1.5rem 0;
+        text-align: center;
+    }
+    .final-warning-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .final-warning-content i {
+        color: #f59e0b;
+        font-size: 1.25rem;
+    }
+    .final-warning-content span {
+        color: #856404;
+        font-weight: bold;
+        font-size: 1rem;
+    }
+    .final-warning p {
+        color: #856404;
+        margin-bottom: 1rem;
+    }
+    .save-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+    .btn-copy-all, .btn-download-urgent {
+        padding: 0.75rem 1.5rem;
+        font-weight: bold;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-copy-all {
+        background: var(--primary);
+        color: white;
+    }
+    .btn-download-urgent {
+        background: #f59e0b;
+        color: white;
+    }
+    .btn-copy-all:hover, .btn-download-urgent:hover {
+        transform: translateY(-2px);
+    }
+    .urgent-step .step-number.urgent {
+        background: #ef4444;
+        animation: pulse 1s infinite;
+    }
 `;
 document.head.appendChild(style);
 </script>

@@ -6,7 +6,7 @@
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
         {% for category, message in messages %}
-            <div class="alert alert-{{ category }}">
+            <div class="notice notice-{{ category }}">
                 {{ message }}
             </div>
         {% endfor %}
@@ -14,159 +14,159 @@
 {% endwith %}
 
 <!-- Page Header -->
-<section class="page-header">
-    <div class="page-header-content">
-        <h1 class="page-title">My Orders</h1>
-        <p class="page-subtitle">Track and view your order history</p>
+<section class="page-heading">
+    <div class="page-heading-content">
+        <h1 class="page-heading-title">My Orders</h1>
+        <p class="page-heading-subtitle">Track and view your order history</p>
     </div>
 </section>
 
-<div class="orders-container">
+<div class="orders-wrapper">
     <!-- Email Form Card -->
-    <div class="email-card">
-        <div class="email-card-header">
-            <div class="header-icon">
+    <div class="email-verification-card">
+        <div class="email-verification-header">
+            <div class="email-verification-icon">
                 <i class="fas fa-envelope-open-text"></i>
             </div>
             <h2>Enter Your Email Address</h2>
-            <p>We'll send you a link to view your orders, or you can view them immediately.</p>
+            <p>Enter the email you used during checkout to view your orders</p>
         </div>
-        
-        <div class="email-card-body">
-            <form method="POST" action="{{ url_for('my_orders') }}" id="orders-email-form" class="email-form">
-                <div class="form-group">
-                    <div class="input-with-icon">
+
+        <div class="email-verification-body">
+            <form method="POST" action="{{ url_for('my_orders') }}" id="orders-form" class="email-entry-form">
+                <div class="form-input-group">
+                    <div class="input-field-with-icon">
                         <i class="fas fa-envelope"></i>
-                        <input type="email" 
-                               name="email" 
-                               id="email" 
-                               class="form-control" 
-                               placeholder="your@email.com" 
+                        <input type="email"
+                               name="email"
+                               id="email"
+                               class="form-control-field"
+                               placeholder="your@email.com"
                                required
                                pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
                                title="Please enter a valid email address">
                     </div>
-                    <div class="form-hint">
+                    <div class="input-hint">
                         <i class="fas fa-info-circle"></i>
                         <span>We'll show all orders associated with this email</span>
                     </div>
                 </div>
-                
-                <div class="form-actions">
-                    <button type="submit" class="btn-view-orders" id="submit-btn">
+
+                <div class="form-action-buttons">
+                    <button type="submit" class="btn-view-orders-action" id="submitBtn">
                         <span>View My Orders</span>
                         <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
             </form>
         </div>
-        
+
         <!-- Recent Orders Preview (if any) -->
         {% if recent_orders %}
-        <div class="recent-preview">
-            <div class="preview-header">
+        <div class="recent-orders-preview">
+            <div class="preview-title">
                 <h3>Recent Orders</h3>
-                <span class="preview-note">Enter email to see all</span>
+                <span class="preview-note-badge">Enter email to see all</span>
             </div>
-            <div class="preview-list">
+            <div class="preview-list-items">
                 {% for order in recent_orders[:3] %}
-                <div class="preview-item">
-                    <div class="preview-info">
-                        <span class="order-number">#{{ order.order_number }}</span>
-                        <span class="order-product">{{ order.product_name }}</span>
+                <div class="preview-order-item">
+                    <div class="preview-order-info">
+                        <span class="order-ref-number">#{{ order.order_number }}</span>
+                        <span class="order-product-name">{{ order.product_name }}</span>
                     </div>
-                    <span class="order-date">{{ order.created_at.strftime('%d %b %Y') }}</span>
+                    <span class="order-date-stamp">{{ order.created_at.strftime('%d %b %Y') }}</span>
                 </div>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
     </div>
-    
+
     <!-- How It Works Section -->
-    <div class="how-it-works">
-        <h2 class="section-title">How It Works</h2>
-        
-        <div class="steps-grid">
-            <div class="step-card">
-                <div class="step-number">1</div>
-                <div class="step-icon">
+    <div class="how-it-works-section">
+        <h2 class="section-main-title">How It Works</h2>
+
+        <div class="steps-container">
+            <div class="step-block">
+                <div class="step-badge">1</div>
+                <div class="step-icon-box">
                     <i class="fas fa-envelope"></i>
                 </div>
                 <h3>Enter Email</h3>
                 <p>Provide the email you used when placing your order</p>
             </div>
-            
-            <div class="step-card">
-                <div class="step-number">2</div>
-                <div class="step-icon">
+
+            <div class="step-block">
+                <div class="step-badge">2</div>
+                <div class="step-icon-box">
                     <i class="fas fa-search"></i>
                 </div>
                 <h3>View Orders</h3>
                 <p>See all your orders with status and details</p>
             </div>
-            
-            <div class="step-card">
-                <div class="step-number">3</div>
-                <div class="step-icon">
-                    <i class="fas fa-download"></i>
+
+            <div class="step-block">
+                <div class="step-badge">3</div>
+                <div class="step-icon-box">
+                    <i class="fas fa-info-circle"></i>
                 </div>
-                <h3>Access Accounts</h3>
-                <p>View account details for completed orders</p>
+                <h3>Order Details</h3>
+                <p>View order summary and transaction info</p>
             </div>
         </div>
     </div>
-    
+
     <!-- FAQ Section -->
-    <div class="orders-faq">
-        <h2 class="section-title">Frequently Asked Questions</h2>
-        
-        <div class="faq-grid">
-            <div class="faq-item">
-                <div class="faq-question">
+    <div class="faq-section">
+        <h2 class="section-main-title">Frequently Asked Questions</h2>
+
+        <div class="faq-list">
+            <div class="faq-entry">
+                <div class="faq-question-block">
                     <i class="fas fa-question-circle"></i>
                     <h4>What email should I use?</h4>
                 </div>
                 <p>Use the same email address you provided during checkout. Your orders are linked to this email.</p>
             </div>
-            
-            <div class="faq-item">
-                <div class="faq-question">
+
+            <div class="faq-entry">
+                <div class="faq-question-block">
                     <i class="fas fa-question-circle"></i>
-                    <h4>I didn't receive my order</h4>
+                    <h4>Where can I find my account credentials?</h4>
                 </div>
-                <p>First, check your spam folder. If you still can't find it, use this page to view your orders and access your account details.</p>
+                <p>Your account credentials are shown immediately after payment on the success page. For security reasons, they are not stored for later viewing.</p>
             </div>
-            
-            <div class="faq-item">
-                <div class="faq-question">
+
+            <div class="faq-entry">
+                <div class="faq-question-block">
                     <i class="fas fa-question-circle"></i>
-                    <h4>Can I view orders without email?</h4>
+                    <h4>Can I view my password again?</h4>
                 </div>
-                <p>For security reasons, you need to verify your email to view your orders. This ensures your account details remain private.</p>
+                <p>For security, passwords are only shown once right after purchase. Please save them immediately. If you lost them, contact support with your order number.</p>
             </div>
-            
-            <div class="faq-item">
-                <div class="faq-question">
+
+            <div class="faq-entry">
+                <div class="faq-question-block">
                     <i class="fas fa-question-circle"></i>
                     <h4>How long are orders stored?</h4>
                 </div>
-                <p>Your orders remain in our system indefinitely. You can always come back to view your purchased accounts.</p>
+                <p>Your orders remain in our system indefinitely. You can always come back to view your purchase history.</p>
             </div>
         </div>
     </div>
-    
+
     <!-- Need Help Section -->
-    <div class="need-help">
-        <div class="help-content">
-            <div class="help-icon">
+    <div class="support-section">
+        <div class="support-content-box">
+            <div class="support-icon-box">
                 <i class="fas fa-headset"></i>
             </div>
-            <div class="help-text">
+            <div class="support-text-box">
                 <h3>Need Help Finding Your Orders?</h3>
                 <p>Our support team is available 24/7 to assist you</p>
             </div>
-            <a href="#" class="btn-contact">
+            <a href="#" class="support-contact-btn">
                 <i class="fas fa-comment"></i>
                 Contact Support
             </a>
@@ -178,18 +178,18 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('orders-email-form');
+    const form = document.getElementById('orders-form');
     const emailInput = document.getElementById('email');
-    const submitBtn = document.getElementById('submit-btn');
-    
+    const submitBtn = document.getElementById('submitBtn');
+
     // Auto-focus email input
     emailInput.focus();
-    
+
     // Real-time email validation
     emailInput.addEventListener('input', function(e) {
         const email = e.target.value.trim();
         const isValid = validateEmail(email);
-        
+
         if (email.length > 0) {
             if (isValid) {
                 emailInput.classList.remove('error');
@@ -205,17 +205,17 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.disabled = true;
         }
     });
-    
+
     // Form submission handling
     form.addEventListener('submit', function(e) {
         const email = emailInput.value.trim();
-        
+
         if (!validateEmail(email)) {
             e.preventDefault();
-            showNotification('Please enter a valid email address', 'error');
+            showAlert('Please enter a valid email address', 'error');
             return;
         }
-        
+
         // Show loading state
         submitBtn.disabled = true;
         submitBtn.innerHTML = `
@@ -223,13 +223,13 @@ document.addEventListener('DOMContentLoaded', function() {
             <i class="fas fa-spinner fa-spin"></i>
         `;
     });
-    
+
     // Email validation function
     function validateEmail(email) {
         const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         return re.test(String(email).toLowerCase());
     }
-    
+
     // Check for email in URL parameters (for convenience)
     const urlParams = new URLSearchParams(window.location.search);
     const emailParam = urlParams.get('email');
@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
         emailInput.classList.add('valid');
         submitBtn.disabled = false;
     }
-    
+
     // Load saved email from localStorage (optional convenience)
     const savedEmail = localStorage.getItem('last_order_email');
     if (savedEmail && !emailInput.value) {
@@ -246,23 +246,24 @@ document.addEventListener('DOMContentLoaded', function() {
         emailInput.classList.add('valid');
         submitBtn.disabled = false;
     }
-    
-    // Notification function
-    function showNotification(message, type) {
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.innerHTML = `
+
+    // Alert function
+    function showAlert(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `notice notice-${type}`;
+        alertDiv.innerHTML = `
             <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
             <span>${message}</span>
         `;
-        
-        document.body.appendChild(notification);
-        
+
+        const container = document.querySelector('.orders-wrapper');
+        container.insertBefore(alertDiv, container.firstChild);
+
         setTimeout(() => {
-            notification.remove();
+            alertDiv.remove();
         }, 3000);
     }
-    
+
     // Add keyboard shortcut (Ctrl+Enter to submit)
     emailInput.addEventListener('keydown', function(e) {
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -271,25 +272,25 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-    
+
     // Remember email checkbox (optional)
     const rememberEmail = document.createElement('div');
-    rememberEmail.className = 'remember-email';
+    rememberEmail.className = 'remember-email-checkbox';
     rememberEmail.innerHTML = `
-        <label class="checkbox-label">
-            <input type="checkbox" id="remember-email" checked>
+        <label class="checkbox-label-style">
+            <input type="checkbox" id="rememberEmailCheckbox" checked>
             <span>Remember my email on this device</span>
         </label>
     `;
-    
+
     // Insert after form group
-    const formGroup = document.querySelector('.form-group');
+    const formGroup = document.querySelector('.form-input-group');
     if (formGroup) {
         formGroup.appendChild(rememberEmail);
     }
-    
+
     // Handle remember email
-    const rememberCheckbox = document.getElementById('remember-email');
+    const rememberCheckbox = document.getElementById('rememberEmailCheckbox');
     if (rememberCheckbox) {
         rememberCheckbox.addEventListener('change', function(e) {
             if (!e.target.checked) {
@@ -297,14 +298,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
     // Save email when form submits
     form.addEventListener('submit', function() {
         if (rememberCheckbox && rememberCheckbox.checked) {
             localStorage.setItem('last_order_email', emailInput.value.trim());
         }
     });
-    
+
     // Add smooth scrolling for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
@@ -320,14 +321,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Add some animations on scroll
+// Add scroll animations
 window.addEventListener('scroll', function() {
-    const elements = document.querySelectorAll('.step-card, .faq-item');
-    
+    const elements = document.querySelectorAll('.step-block, .faq-entry');
+
     elements.forEach(element => {
         const position = element.getBoundingClientRect();
-        
-        // If element is in viewport
         if (position.top < window.innerHeight - 100) {
             element.classList.add('visible');
         }
