@@ -343,6 +343,11 @@ def dashboard():
 
     return render_template('dashboard.html', user=user, orders=orders)
 
+@app.route('/support')
+def support():
+    """Support & Contact page"""
+    return render_template('support.html')
+
 @app.route('/category/<slug>')
 def category_view(slug):
     """View products in a category"""

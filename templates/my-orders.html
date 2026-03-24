@@ -3,16 +3,6 @@
 {% block title %}My Orders - Melody Store{% endblock %}
 
 {% block content %}
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            <div class="notice notice-{{ category }}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
-
 <!-- Page Header -->
 <section class="page-heading">
     <div class="page-heading-content">
@@ -22,13 +12,25 @@
 </section>
 
 <div class="orders-wrapper">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="notice notice-{{ category }}">
+                    <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
     <!-- Email Form Card -->
     <div class="email-verification-card">
         <div class="email-verification-header">
             <div class="email-verification-icon">
                 <i class="fas fa-envelope-open-text"></i>
             </div>
-            <h2>Enter Your Email Address</h2>
+            <h2>Find Your Orders</h2>
             <p>Enter the email you used during checkout to view your orders</p>
         </div>
 
@@ -60,27 +62,6 @@
                 </div>
             </form>
         </div>
-
-        <!-- Recent Orders Preview (if any) -->
-        {% if recent_orders %}
-        <div class="recent-orders-preview">
-            <div class="preview-title">
-                <h3>Recent Orders</h3>
-                <span class="preview-note-badge">Enter email to see all</span>
-            </div>
-            <div class="preview-list-items">
-                {% for order in recent_orders[:3] %}
-                <div class="preview-order-item">
-                    <div class="preview-order-info">
-                        <span class="order-ref-number">#{{ order.order_number }}</span>
-                        <span class="order-product-name">{{ order.product_name }}</span>
-                    </div>
-                    <span class="order-date-stamp">{{ order.created_at.strftime('%d %b %Y') }}</span>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
     </div>
 
     <!-- How It Works Section -->
@@ -166,71 +147,315 @@
                 <h3>Need Help Finding Your Orders?</h3>
                 <p>Our support team is available 24/7 to assist you</p>
             </div>
-            <a href="#" class="support-contact-btn">
+            <a href="{{ url_for('support') }}" class="support-contact-btn">
                 <i class="fas fa-comment"></i>
                 Contact Support
             </a>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
+<style>
+.orders-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.email-verification-card {
+    background: var(--white);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+}
+
+.email-verification-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.email-verification-icon {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: white;
+    font-size: 2rem;
+}
+
+.email-verification-header h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.email-verification-header p {
+    color: var(--text-light);
+}
+
+.input-field-with-icon {
+    position: relative;
+}
+
+.input-field-with-icon i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-light);
+}
+
+.input-field-with-icon input {
+    width: 100%;
+    padding: 0.9rem 1rem 0.9rem 2.8rem;
+    border: 2px solid var(--gray);
+    border-radius: 1rem;
+    font-size: 1rem;
+}
+
+.input-field-with-icon input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.input-hint {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.form-action-buttons {
+    margin-top: 1.5rem;
+}
+
+.btn-view-orders-action {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border: none;
+    border-radius: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-view-orders-action:hover {
+    transform: translateY(-2px);
+}
+
+/* Steps Section */
+.how-it-works-section {
+    margin-bottom: 2rem;
+}
+
+.section-main-title {
+    font-size: 1.3rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.steps-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.step-block {
+    text-align: center;
+    padding: 1rem;
+    background: var(--light);
+    border-radius: 1rem;
+}
+
+.step-badge {
+    width: 32px;
+    height: 32px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.5rem;
+    font-weight: bold;
+}
+
+.step-icon-box i {
+    font-size: 1.5rem;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.step-block h3 {
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.step-block p {
+    font-size: 0.7rem;
+    color: var(--text-light);
+}
+
+/* FAQ Section */
+.faq-section {
+    margin-bottom: 2rem;
+}
+
+.faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.faq-entry {
+    background: var(--white);
+    border-radius: 1rem;
+    padding: 1rem;
+    box-shadow: var(--shadow);
+}
+
+.faq-question-block {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.faq-question-block i {
+    color: var(--primary);
+}
+
+.faq-question-block h4 {
+    font-size: 0.9rem;
+}
+
+.faq-entry p {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-left: 1.5rem;
+}
+
+/* Support Section */
+.support-section {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border-radius: 1rem;
+    padding: 1.5rem;
+    color: white;
+}
+
+.support-content-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.support-icon-box i {
+    font-size: 2rem;
+}
+
+.support-text-box h3 {
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.support-text-box p {
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+.support-contact-btn {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 2rem;
+    text-decoration: none;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.support-contact-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .steps-container {
+        grid-template-columns: 1fr;
+    }
+    .support-content-box {
+        flex-direction: column;
+        text-align: center;
+    }
+    .email-verification-card {
+        padding: 1.5rem;
+    }
+}
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('orders-form');
     const emailInput = document.getElementById('email');
     const submitBtn = document.getElementById('submitBtn');
 
-    // Auto-focus email input
     emailInput.focus();
 
-    // Real-time email validation
+    // Real-time validation
     emailInput.addEventListener('input', function(e) {
         const email = e.target.value.trim();
-        const isValid = validateEmail(email);
-
-        if (email.length > 0) {
-            if (isValid) {
-                emailInput.classList.remove('error');
-                emailInput.classList.add('valid');
-                submitBtn.disabled = false;
-            } else {
-                emailInput.classList.remove('valid');
-                emailInput.classList.add('error');
-                submitBtn.disabled = true;
-            }
+        const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        
+        if (email.length > 0 && isValid) {
+            emailInput.classList.remove('error');
+            emailInput.classList.add('valid');
+            submitBtn.disabled = false;
+        } else if (email.length > 0 && !isValid) {
+            emailInput.classList.remove('valid');
+            emailInput.classList.add('error');
+            submitBtn.disabled = true;
         } else {
             emailInput.classList.remove('valid', 'error');
             submitBtn.disabled = true;
         }
     });
 
-    // Form submission handling
+    // Handle form submission
     form.addEventListener('submit', function(e) {
         const email = emailInput.value.trim();
-
-        if (!validateEmail(email)) {
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             e.preventDefault();
             showAlert('Please enter a valid email address', 'error');
-            return;
+        } else {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<span>Searching...</span><i class="fas fa-spinner fa-spin"></i>`;
         }
-
-        // Show loading state
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = `
-            <span>Searching...</span>
-            <i class="fas fa-spinner fa-spin"></i>
-        `;
     });
 
-    // Email validation function
-    function validateEmail(email) {
-        const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        return re.test(String(email).toLowerCase());
+    function showAlert(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `notice notice-${type}`;
+        alertDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i><span>${message}</span>`;
+        const container = document.querySelector('.orders-wrapper');
+        container.insertBefore(alertDiv, container.firstChild);
+        setTimeout(() => alertDiv.remove(), 3000);
     }
 
-    // Check for email in URL parameters (for convenience)
+    // Pre-fill from URL
     const urlParams = new URLSearchParams(window.location.search);
     const emailParam = urlParams.get('email');
     if (emailParam) {
@@ -238,99 +463,6 @@ document.addEventListener('DOMContentLoaded', function() {
         emailInput.classList.add('valid');
         submitBtn.disabled = false;
     }
-
-    // Load saved email from localStorage (optional convenience)
-    const savedEmail = localStorage.getItem('last_order_email');
-    if (savedEmail && !emailInput.value) {
-        emailInput.value = savedEmail;
-        emailInput.classList.add('valid');
-        submitBtn.disabled = false;
-    }
-
-    // Alert function
-    function showAlert(message, type) {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `notice notice-${type}`;
-        alertDiv.innerHTML = `
-            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-            <span>${message}</span>
-        `;
-
-        const container = document.querySelector('.orders-wrapper');
-        container.insertBefore(alertDiv, container.firstChild);
-
-        setTimeout(() => {
-            alertDiv.remove();
-        }, 3000);
-    }
-
-    // Add keyboard shortcut (Ctrl+Enter to submit)
-    emailInput.addEventListener('keydown', function(e) {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-            if (!submitBtn.disabled) {
-                form.submit();
-            }
-        }
-    });
-
-    // Remember email checkbox (optional)
-    const rememberEmail = document.createElement('div');
-    rememberEmail.className = 'remember-email-checkbox';
-    rememberEmail.innerHTML = `
-        <label class="checkbox-label-style">
-            <input type="checkbox" id="rememberEmailCheckbox" checked>
-            <span>Remember my email on this device</span>
-        </label>
-    `;
-
-    // Insert after form group
-    const formGroup = document.querySelector('.form-input-group');
-    if (formGroup) {
-        formGroup.appendChild(rememberEmail);
-    }
-
-    // Handle remember email
-    const rememberCheckbox = document.getElementById('rememberEmailCheckbox');
-    if (rememberCheckbox) {
-        rememberCheckbox.addEventListener('change', function(e) {
-            if (!e.target.checked) {
-                localStorage.removeItem('last_order_email');
-            }
-        });
-    }
-
-    // Save email when form submits
-    form.addEventListener('submit', function() {
-        if (rememberCheckbox && rememberCheckbox.checked) {
-            localStorage.setItem('last_order_email', emailInput.value.trim());
-        }
-    });
-
-    // Add smooth scrolling for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
-    });
-});
-
-// Add scroll animations
-window.addEventListener('scroll', function() {
-    const elements = document.querySelectorAll('.step-block, .faq-entry');
-
-    elements.forEach(element => {
-        const position = element.getBoundingClientRect();
-        if (position.top < window.innerHeight - 100) {
-            element.classList.add('visible');
-        }
-    });
 });
 </script>
 {% endblock %}

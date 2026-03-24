@@ -77,6 +77,10 @@
                 </ul>
 
                 <div class="nav-actions">
+                    <a href="{{ url_for('support') }}" class="nav-link">
+                        <i class="fas fa-headset"></i>
+                        <span>Support</span>
+                    </a>
                     {% if session.user_id %}
                         <a href="{{ url_for('dashboard') }}" class="nav-link">
                             <i class="fas fa-tachometer-alt"></i>
@@ -123,7 +127,7 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        
+
         {% block content %}{% endblock %}
     </main>
 
@@ -167,7 +171,7 @@
                         <li><a href="#">FAQ</a></li>
                         <li><a href="#">Terms of Service</a></li>
                         <li><a href="#">Privacy Policy</a></li>
-                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="{{ url_for('support') }}">Contact Us</a></li>
                     </ul>
                 </div>
             </div>
@@ -184,6 +188,12 @@
         </div>
     </footer>
 
+    <!-- Floating Telegram DM Button -->
+    <a href="https://t.me/Melodycustomercare" class="floating-telegram" target="_blank" rel="noopener noreferrer">
+        <i class="fab fa-telegram-plane"></i>
+        <span>Chat with us</span>
+    </a>
+
     <!-- Mobile Menu Overlay -->
     <div class="overlay"></div>
 
@@ -192,6 +202,60 @@
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
     {% block extra_js %}{% endblock %}
+
+    <style>
+        /* Floating Telegram Button */
+        .floating-telegram {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #0088cc, #005f8c);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            text-decoration: none;
+        }
+
+        .floating-telegram:hover {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, #005f8c, #003f5c);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        }
+
+        .floating-telegram span {
+            display: none;
+            position: absolute;
+            right: 70px;
+            background: #1f2937;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .floating-telegram:hover span {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .floating-telegram {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+    </style>
 
     <script>
         // Mobile menu functionality
@@ -214,7 +278,7 @@
                 $('#cart-count').text(cart.length);
             }
             updateCartCount();
-            
+
             // Auto-dismiss alerts after 5 seconds
             setTimeout(function() {
                 $('.alert').fadeOut('slow', function() {
@@ -222,7 +286,7 @@
                 });
             }, 5000);
         });
-        
+
         // Close alert on click
         function closeAlert(btn) {
             $(btn).parent().fadeOut('slow', function() {
